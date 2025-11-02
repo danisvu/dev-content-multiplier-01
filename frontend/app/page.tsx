@@ -2,6 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Loader2 } from 'lucide-react';
+import { ErrorMessage } from './components/ErrorMessage';
+import { SuccessMessage } from './components/SuccessMessage';
+import { IdeaCard } from './components/IdeaCard';
+import { Breadcrumb } from './components/Breadcrumb';
+import { MarkdownEditor } from './components/MarkdownEditor';
+import { ContentStats } from './components/ContentStats';
 
 interface Idea {
   id: number;
@@ -53,7 +60,7 @@ export default function Home() {
     rationale: '',
     persona: '',
     industry: '',
-    status: 'pending'
+    status: 'draft'
   });
 
   // AI Generation states
@@ -66,6 +73,10 @@ export default function Home() {
   const [generating, setGenerating] = useState(false);
   const [generatedIdeas, setGeneratedIdeas] = useState<GeneratedIdea[]>([]);
   const [generateError, setGenerateError] = useState<string | null>(null);
+  const [generateSuccess, setGenerateSuccess] = useState<string | null>(null);
+
+  // Form submission states
+  const [createSuccess, setCreateSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     fetchIdeas();
@@ -96,6 +107,7 @@ export default function Home() {
         industry: '',
         status: 'pending'
       });
+      setCreateSuccess('Ý tưởng đã được tạo thành công!');
       fetchIdeas();
     } catch (error) {
       console.error('Error creating idea:', error);
@@ -120,6 +132,7 @@ export default function Home() {
 
     setGenerating(true);
     setGenerateError(null);
+    setGenerateSuccess(null);
     setGeneratedIdeas([]);
 
     try {
@@ -139,6 +152,7 @@ export default function Home() {
 
       if (response.data.success && response.data.ideas) {
         setGeneratedIdeas(response.data.ideas);
+        setGenerateSuccess(`✨ Đã tạo thành công ${response.data.ideas.length} ý tưởng!`);
         fetchIdeas(); // Refresh the ideas list
       } else {
         setGenerateError(response.data.error || 'Đã có lỗi xảy ra khi tạo ý tưởng');
@@ -185,6 +199,17 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4">
+        {/* Breadcrumb */}
+        <div className="mb-6">
+          <Breadcrumb
+            items={[
+              { label: 'Home', href: '/' },
+              { label: 'Ideas' }
+            ]}
+            className="text-gray-600"
+          />
+        </div>
+
         <h1 className="text-4xl font-bold text-gray-900 mb-8 text-center">
           Content Ideas Manager
         </h1>
@@ -261,27 +286,43 @@ export default function Home() {
               </div>
             </div>
 
+            {generateSuccess && (
+              <SuccessMessage
+                message={generateSuccess}
+                onDismiss={() => setGenerateSuccess(null)}
+                autoDismissDelay={5000}
+              />
+            )}
+
             {generateError && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                {generateError}
-              </div>
+              <ErrorMessage
+                message={generateError}
+                onRetry={() => {
+                  setGenerateError(null);
+                  setGenerating(true);
+                  // Trigger form submit by calling handleGenerateIdeas
+                  const form = document.querySelector('form') as HTMLFormElement;
+                  if (form) form.dispatchEvent(new Event('submit', { bubbles: true }));
+                }}
+                onDismiss={() => setGenerateError(null)}
+              />
             )}
 
             <button
               type="submit"
               disabled={generating}
-              className="w-full bg-purple-600 text-white py-3 px-4 rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200 flex items-center justify-center"
+              className="w-full bg-purple-600 text-white py-3 px-4 rounded-md hover:bg-purple-700 disabled:bg-purple-400 disabled:cursor-not-allowed transition duration-200 flex items-center justify-center gap-2 font-medium"
             >
               {generating ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Đang tạo ý tưởng...
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Generating...</span>
                 </>
               ) : (
-                '🚀 Generate Ideas'
+                <>
+                  <span>🚀</span>
+                  <span>Generate Ideas</span>
+                </>
               )}
             </button>
           </form>
@@ -309,13 +350,34 @@ export default function Home() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Form Section */}
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Form Section - Sticky Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="sticky top-20 bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">
                 Tạo ý tưởng mới
               </h2>
+
+              {/* Content Stats */}
+              <div className="mb-4">
+                <ContentStats
+                  content={`${formData.title} ${formData.description} ${formData.rationale}`}
+                  status={formData.status as 'draft' | 'in-progress' | 'completed'}
+                  sticky={false}
+                />
+              </div>
+
+              {createSuccess && (
+                <div className="mb-4">
+                  <SuccessMessage
+                    message={createSuccess}
+                    onDismiss={() => setCreateSuccess(null)}
+                    autoDismissDelay={5000}
+                  />
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -332,28 +394,30 @@ export default function Home() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Mô tả
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Mô tả (Markdown)
                   </label>
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows={3}
-                    placeholder="Mô tả chi tiết ý tưởng"
+                  <MarkdownEditor
+                    value={formData.description || ''}
+                    onChange={(value) =>
+                      setFormData({ ...formData, description: value })
+                    }
+                    placeholder="Mô tả chi tiết ý tưởng (hỗ trợ Markdown)"
+                    height={150}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Lý do
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Lý do (Markdown)
                   </label>
-                  <textarea
-                    value={formData.rationale}
-                    onChange={(e) => setFormData({ ...formData, rationale: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows={2}
-                    placeholder="Tại sao ý tưởng này sẽ hiệu quả?"
+                  <MarkdownEditor
+                    value={formData.rationale || ''}
+                    onChange={(value) =>
+                      setFormData({ ...formData, rationale: value })
+                    }
+                    placeholder="Tại sao ý tưởng này sẽ hiệu quả? (hỗ trợ Markdown)"
+                    height={120}
                   />
                 </div>
 
@@ -408,73 +472,41 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Ideas List Section */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          {/* Ideas Grid Section */}
+          <div className="lg:col-span-3">
+            <div>
+              <h2 className="text-2xl font-semibold text-gray-800 mb-6">
                 Danh sách ý tưởng ({ideas.length})
               </h2>
-              
+
               {ideas.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  Chưa có ý tưởng nào. Hãy tạo ý tưởng đầu tiên!
+                <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 text-center py-12 px-6">
+                  <p className="text-lg text-gray-500">
+                    Chưa có ý tưởng nào. Hãy tạo ý tưởng đầu tiên!
+                  </p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {ideas.map((idea) => (
-                    <div
+                    <IdeaCard
                       key={idea.id}
-                      className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow"
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900">
-                          {idea.title}
-                        </h3>
-                        <button
-                          onClick={() => handleDelete(idea.id)}
-                          className="text-red-500 hover:text-red-700 text-sm font-medium"
-                        >
-                          Xóa
-                        </button>
-                      </div>
-                      
-                      {idea.description && (
-                        <p className="text-gray-600 mb-3">{idea.description}</p>
-                      )}
-                      
-                      {idea.rationale && (
-                        <p className="text-purple-700 text-sm mb-3 italic">
-                          <strong>Lý do:</strong> {idea.rationale}
-                        </p>
-                      )}
-                      
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {idea.persona && (
-                          <span className="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">
-                            👤 {idea.persona}
-                          </span>
-                        )}
-                        {idea.industry && (
-                          <span className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
-                            🏢 {idea.industry}
-                          </span>
-                        )}
-                        <span className={`inline-block text-xs px-2 py-1 rounded ${
-                          idea.status === 'completed' 
-                            ? 'bg-gray-100 text-gray-800'
-                            : idea.status === 'in-progress'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-blue-100 text-blue-800'
-                        }`}>
-                          {idea.status === 'completed' ? '✅' : 
-                           idea.status === 'in-progress' ? '🔄' : '⏳'} {idea.status}
-                        </span>
-                      </div>
-                      
-                      <div className="text-xs text-gray-500">
-                        📅 {formatDate(idea.created_at)}
-                      </div>
-                    </div>
+                      idea={idea}
+                      onEdit={(ideaToEdit) => {
+                        setFormData({
+                          title: ideaToEdit.title,
+                          description: ideaToEdit.description || '',
+                          rationale: ideaToEdit.rationale || '',
+                          persona: ideaToEdit.persona || '',
+                          industry: ideaToEdit.industry || '',
+                          status: ideaToEdit.status
+                        });
+                        // Scroll to form
+                        const formElement = document.querySelector('form');
+                        formElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }}
+                      onDelete={handleDelete}
+                      formatDate={formatDate}
+                    />
                   ))}
                 </div>
               )}

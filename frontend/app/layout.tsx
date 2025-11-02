@@ -1,11 +1,12 @@
 import './globals.css'
 import { Inter } from 'next/font/google'
+import { Navbar } from './components/Navbar'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
   title: 'Content Ideas Manager',
-  description: 'A simple app to manage content ideas',
+  description: 'Generate and manage content ideas with AI',
 }
 
 export default function RootLayout({
@@ -15,7 +16,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={`${inter.className} bg-gray-50`}>
+        <Navbar />
+        <main className="min-h-screen">
+          {children}
+        </main>
+      </body>
     </html>
   )
 }
