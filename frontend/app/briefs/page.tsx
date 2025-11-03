@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import { Breadcrumb } from '../components/Breadcrumb';
+import { PageTransition } from '../components/PageTransition';
 
 export default function BriefsPage() {
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <PageTransition>
+      <div className="min-h-screen bg-background py-8">
       <div className="max-w-6xl mx-auto px-4">
         {/* Breadcrumb */}
         <div className="mb-6">
@@ -18,24 +20,24 @@ export default function BriefsPage() {
           />
         </div>
 
-        <div className="bg-white rounded-lg shadow-md p-8">
+        <div className="bg-card rounded-lg shadow-md p-8">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            <h1 className="text-4xl font-bold mb-4">
               📋 Content Briefs
             </h1>
-            <p className="text-lg text-gray-600 mb-8">
+            <p className="text-lg text-muted-foreground mb-8">
               Create and manage content briefs with detailed guidelines
             </p>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-8 max-w-2xl mx-auto">
+            <div className="bg-muted/50 border rounded-lg p-8 max-w-2xl mx-auto">
               <div className="text-6xl mb-4">🚧</div>
-              <h2 className="text-2xl font-semibold text-gray-800 mb-2">
+              <h2 className="text-2xl font-semibold mb-2">
                 Coming Soon
               </h2>
-              <p className="text-gray-600 mb-4">
+              <p className="text-muted-foreground mb-4">
                 The Briefs feature is currently in development. This section will allow you to:
               </p>
-              <ul className="text-left inline-block text-gray-600 space-y-2">
+              <ul className="text-left inline-block text-muted-foreground space-y-2">
                 <li>✨ Create detailed content briefs</li>
                 <li>📝 Define audience personas and guidelines</li>
                 <li>🎯 Set content objectives and KPIs</li>
@@ -46,7 +48,7 @@ export default function BriefsPage() {
             <div className="mt-8">
               <a
                 href="/"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-colors"
               >
                 <span>💡</span>
                 <span>Back to Ideas</span>
@@ -55,6 +57,7 @@ export default function BriefsPage() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </PageTransition>
   );
 }

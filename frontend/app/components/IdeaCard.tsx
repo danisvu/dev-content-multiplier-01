@@ -1,125 +1,173 @@
-'use client';
+'use client'
 
-import { Trash2, Edit2 } from 'lucide-react';
+import { motion } from 'framer-motion'
+import { MoreVertical, Edit2, Trash2, Eye } from 'lucide-react'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from './ui/card'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu'
+import { Badge } from './ui/badge'
+import { Button } from './ui/button'
 
 interface Idea {
-  id: number;
-  title: string;
-  description?: string;
-  rationale?: string;
-  persona?: string;
-  industry?: string;
-  status: string;
-  created_at: string;
+  id: number
+  title: string
+  description?: string
+  rationale?: string
+  persona?: string
+  industry?: string
+  status: string
+  created_at: string
 }
 
 interface IdeaCardProps {
-  idea: Idea;
-  onEdit?: (idea: Idea) => void;
-  onDelete?: (id: number) => void;
-  formatDate?: (date: string) => string;
+  idea: Idea
+  onEdit?: (idea: Idea) => void
+  onDelete?: (id: number) => void
+  onView?: (idea: Idea) => void
+  formatDate?: (date: string) => string
 }
 
 const statusConfig = {
   completed: {
-    bg: 'bg-gray-100',
-    text: 'text-gray-700',
+    variant: 'success' as const,
+    label: 'Hoàn thành',
     icon: '✅',
   },
   'in-progress': {
-    bg: 'bg-yellow-100',
-    text: 'text-yellow-700',
+    variant: 'warning' as const,
+    label: 'Đang làm',
     icon: '🔄',
   },
   pending: {
-    bg: 'bg-blue-100',
-    text: 'text-blue-700',
+    variant: 'info' as const,
+    label: 'Chờ xử lý',
     icon: '⏳',
   },
-};
+}
 
 export function IdeaCard({
   idea,
   onEdit,
   onDelete,
+  onView,
   formatDate,
 }: IdeaCardProps) {
-  const status = (statusConfig as any)[idea.status] || statusConfig.pending;
-  const displayDate = formatDate ? formatDate(idea.created_at) : new Date(idea.created_at).toLocaleDateString();
+  const status = (statusConfig as any)[idea.status] || statusConfig.pending
+  const displayDate = formatDate
+    ? formatDate(idea.created_at)
+    : new Date(idea.created_at).toLocaleDateString('vi-VN')
 
   return (
-    <div className="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow duration-300 bg-white flex flex-col h-full">
-      {/* Card Header */}
-      <div className="flex justify-between items-start gap-3 mb-3">
-        <h3 className="text-lg font-semibold text-gray-900 truncate flex-1">
-          {idea.title}
-        </h3>
-        <span
-          className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${status.bg} ${status.text}`}
-        >
-          {status.icon}
-          <span className="capitalize">{idea.status}</span>
-        </span>
-      </div>
-
-      {/* Card Body */}
-      <div className="flex-1 mb-4">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      whileHover={{ scale: 1.05 }}
+      className="h-full"
+    >
+      <Card className="hover:shadow-lg transition-shadow duration-300 flex flex-col h-full">
+        <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <CardTitle className="text-lg truncate">{idea.title}</CardTitle>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant={status.variant}>
+              <span className="mr-1">{status.icon}</span>
+              {status.label}
+            </Badge>
+            
+            {/* Dropdown Menu for Actions */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                >
+                  <MoreVertical className="h-4 w-4" />
+                  <span className="sr-only">Open menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {onView && (
+                  <DropdownMenuItem onClick={() => onView(idea)}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    <span>Xem chi tiết</span>
+                  </DropdownMenuItem>
+                )}
+                {onEdit && (
+                  <DropdownMenuItem onClick={() => onEdit(idea)}>
+                    <Edit2 className="mr-2 h-4 w-4" />
+                    <span>Chỉnh sửa</span>
+                  </DropdownMenuItem>
+                )}
+                {onDelete && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => onDelete(idea.id)}
+                      className="text-red-600 focus:text-red-600"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      <span>Xóa</span>
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
         {idea.description && (
-          <p className="text-sm text-gray-600 line-clamp-3 mb-2">
+          <CardDescription className="line-clamp-2 mt-2">
             {idea.description}
-          </p>
+          </CardDescription>
         )}
+      </CardHeader>
 
+      <CardContent className="flex-1 pb-3">
         {idea.rationale && (
           <p className="text-xs text-purple-600 italic line-clamp-2">
-            <strong>Why:</strong> {idea.rationale}
+            <strong>Lý do:</strong> {idea.rationale}
           </p>
         )}
-      </div>
+      </CardContent>
 
-      {/* Card Footer - Chips */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        {idea.persona && (
-          <span className="inline-flex items-center gap-1 bg-purple-100 text-purple-700 text-xs font-medium px-2.5 py-1 rounded-full">
-            👤 <span className="truncate">{idea.persona}</span>
-          </span>
+      <CardFooter className="flex flex-col gap-3 pt-3 border-t">
+        {/* Tags */}
+        {(idea.persona || idea.industry) && (
+          <div className="flex flex-wrap gap-2 w-full">
+            {idea.persona && (
+              <Badge variant="secondary" className="text-xs">
+                👤 {idea.persona}
+              </Badge>
+            )}
+            {idea.industry && (
+              <Badge variant="secondary" className="text-xs">
+                🏢 {idea.industry}
+              </Badge>
+            )}
+          </div>
         )}
-        {idea.industry && (
-          <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs font-medium px-2.5 py-1 rounded-full">
-            🏢 <span className="truncate">{idea.industry}</span>
-          </span>
-        )}
-      </div>
 
-      {/* Card Footer - Meta & Actions */}
-      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-        <span className="text-xs text-gray-500">
+        {/* Date */}
+        <div className="text-xs text-slate-500 w-full">
           {displayDate}
-        </span>
-
-        <div className="flex gap-2">
-          {onEdit && (
-            <button
-              onClick={() => onEdit(idea)}
-              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-              title="Edit idea"
-              aria-label="Edit idea"
-            >
-              <Edit2 className="w-4 h-4" />
-            </button>
-          )}
-          {onDelete && (
-            <button
-              onClick={() => onDelete(idea.id)}
-              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-              title="Delete idea"
-              aria-label="Delete idea"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          )}
         </div>
-      </div>
-    </div>
-  );
+      </CardFooter>
+    </Card>
+    </motion.div>
+  )
 }
