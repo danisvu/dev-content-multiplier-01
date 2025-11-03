@@ -10,10 +10,10 @@ import {
   Lightbulb,
   FileText,
   Settings,
-  BarChart
+  Package
 } from 'lucide-react'
 import { Button } from './ui/button'
-import { ThemeToggle } from './ThemeToggle'
+import { ThemeToggle } from './ui/theme-toggle'
 import { cn } from '@/lib/utils'
 
 interface NavItem {
@@ -26,7 +26,7 @@ const navItems: NavItem[] = [
   { href: '/', label: 'Trang chủ', icon: Home },
   { href: '/ideas', label: 'Ý tưởng', icon: Lightbulb },
   { href: '/briefs', label: 'Briefs', icon: FileText },
-  { href: '/analytics', label: 'Thống kê', icon: BarChart },
+  { href: '/packs', label: 'Packs', icon: Package },
   { href: '/settings', label: 'Cài đặt', icon: Settings },
 ]
 

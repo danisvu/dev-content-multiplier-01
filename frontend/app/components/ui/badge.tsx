@@ -21,6 +21,15 @@ const badgeVariants = cva(
           "border-transparent bg-yellow-600 text-white hover:bg-yellow-600/80 dark:bg-yellow-700",
         info:
           "border-transparent bg-blue-600 text-white hover:bg-blue-600/80 dark:bg-blue-700",
+        // Status-specific variants
+        draft:
+          "border-transparent bg-slate-500 text-white hover:bg-slate-500/80 dark:bg-slate-600",
+        review:
+          "border-transparent bg-orange-500 text-white hover:bg-orange-500/80 dark:bg-orange-600",
+        approved:
+          "border-transparent bg-blue-600 text-white hover:bg-blue-600/80 dark:bg-blue-700",
+        published:
+          "border-transparent bg-green-600 text-white hover:bg-green-600/80 dark:bg-green-700",
       },
     },
     defaultVariants: {
@@ -40,4 +49,29 @@ function Badge({ className, variant, ...props }: BadgeProps) {
 }
 
 export { Badge, badgeVariants }
+
+// Helper component for status badges
+export type ContentStatus = "draft" | "review" | "approved" | "published"
+
+export interface StatusBadgeProps extends Omit<BadgeProps, 'variant'> {
+  status: ContentStatus
+}
+
+export function StatusBadge({ status, className, ...props }: StatusBadgeProps) {
+  const statusConfig: Record<ContentStatus, { label: string; icon: string }> = {
+    draft: { label: 'Draft', icon: '📝' },
+    review: { label: 'Review', icon: '👀' },
+    approved: { label: 'Approved', icon: '✅' },
+    published: { label: 'Published', icon: '🚀' },
+  }
+
+  const config = statusConfig[status]
+
+  return (
+    <Badge variant={status} className={className} {...props}>
+      <span className="mr-1">{config.icon}</span>
+      {config.label}
+    </Badge>
+  )
+}
 

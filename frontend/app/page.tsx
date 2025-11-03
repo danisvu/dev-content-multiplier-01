@@ -3,16 +3,23 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { Loader2, Plus, Sparkles } from 'lucide-react'
-import { ErrorMessage } from './components/ErrorMessage'
-import { SuccessMessage } from './components/SuccessMessage'
 import { IdeaCard } from './components/IdeaCard'
-import { EmptyIdeas } from './components/EmptyStateVariants'
 import { IdeaDialog, IdeaFormData } from './components/IdeaDialog'
-import { Button } from './components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './components/ui/card'
-import { IdeasSkeleton } from './components/skeletons'
 import { PageTransition } from './components/PageTransition'
 import { SuccessConfetti } from './components/SuccessConfetti'
+import { 
+  Button, 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle,
+  EmptyState,
+  SkeletonList,
+  DeleteDialog
+} from './components/ui'
+import { toast, toastSuccess, toastError } from '@/lib/toast'
+import { Lightbulb } from 'lucide-react'
 
 interface Idea {
   id: number
@@ -64,15 +71,12 @@ export default function Home() {
   })
   const [generating, setGenerating] = useState(false)
   const [generatedIdeas, setGeneratedIdeas] = useState<GeneratedIdea[]>([])
-  const [generateError, setGenerateError] = useState<string | null>(null)
-  const [generateSuccess, setGenerateSuccess] = useState<string | null>(null)
-
-  // Success/Error messages
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   
   // Confetti state
   const [showConfetti, setShowConfetti] = useState(false)
+  
+  // Delete confirmation modal
+  const [deleteId, setDeleteId] = useState<number | null>(null)
 
   useEffect(() => {
     fetchIdeas()
@@ -84,7 +88,7 @@ export default function Home() {
       setIdeas(response.data)
     } catch (error) {
       console.error('Error fetching ideas:', error)
-      setErrorMessage('Không thể tải danh sách ý tưởng')
+      toastError('Lỗi', 'Không thể tải danh sách ý tưởng')
     } finally {
       setLoading(false)
     }
@@ -94,24 +98,20 @@ export default function Home() {
     setDialogLoading(true)
     try {
       if (editingIdea) {
-        // Update existing idea
         await axios.put(`${API_BASE_URL}/ideas/${editingIdea.id}`, data)
-        setSuccessMessage('Ý tưởng đã được cập nhật thành công!')
+        toastSuccess('Thành công!', 'Ý tưởng đã được cập nhật.')
       } else {
-        // Create new idea
         await axios.post(`${API_BASE_URL}/ideas`, data)
-        setSuccessMessage('Ý tưởng đã được tạo thành công!')
+        toastSuccess('Thành công!', 'Ý tưởng đã được tạo.')
       }
       
-      // Trigger confetti on success
       setShowConfetti(true)
-      
       setDialogOpen(false)
       setEditingIdea(null)
       fetchIdeas()
     } catch (error) {
       console.error('Error saving idea:', error)
-      setErrorMessage('Không thể lưu ý tưởng. Vui lòng thử lại.')
+      toastError('Lỗi', 'Không thể lưu ý tưởng. Vui lòng thử lại.')
     } finally {
       setDialogLoading(false)
     }
@@ -122,31 +122,33 @@ export default function Home() {
     setDialogOpen(true)
   }
 
-  const handleDeleteIdea = async (id: number) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa ý tưởng này?')) {
-      return
-    }
+  const handleDeleteIdea = (id: number) => {
+    setDeleteId(id)
+  }
 
+  const confirmDelete = async () => {
+    if (!deleteId) return
+    
     try {
-      await axios.delete(`${API_BASE_URL}/ideas/${id}`)
-      setSuccessMessage('Ý tưởng đã được xóa thành công!')
+      await axios.delete(`${API_BASE_URL}/ideas/${deleteId}`)
+      toastSuccess('Đã xóa!', 'Ý tưởng đã được xóa thành công.')
       fetchIdeas()
     } catch (error) {
       console.error('Error deleting idea:', error)
-      setErrorMessage('Không thể xóa ý tưởng. Vui lòng thử lại.')
+      toastError('Lỗi', 'Không thể xóa ý tưởng. Vui lòng thử lại.')
+    } finally {
+      setDeleteId(null)
     }
   }
 
   const handleGenerateIdeas = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!generateForm.persona.trim() || !generateForm.industry.trim()) {
-      setGenerateError('Vui lòng nhập cả persona và industry')
+      toastError('Lỗi', 'Vui lòng nhập cả persona và industry')
       return
     }
 
     setGenerating(true)
-    setGenerateError(null)
-    setGenerateSuccess(null)
     setGeneratedIdeas([])
 
     try {
@@ -166,14 +168,11 @@ export default function Home() {
 
       if (response.data.success && response.data.ideas) {
         setGeneratedIdeas(response.data.ideas)
-        setGenerateSuccess(`✨ Đã tạo thành công ${response.data.ideas.length} ý tưởng!`)
-        
-        // Trigger confetti on AI generation success
+        toastSuccess('Thành công!', `✨ Đã tạo ${response.data.ideas.length} ý tưởng mới!`)
         setShowConfetti(true)
-        
         fetchIdeas()
       } else {
-        setGenerateError(response.data.error || 'Đã có lỗi xảy ra khi tạo ý tưởng')
+        toastError('Lỗi', response.data.error || 'Đã có lỗi xảy ra khi tạo ý tưởng')
       }
     } catch (error) {
       console.error('Error generating ideas:', error)
@@ -184,13 +183,13 @@ export default function Home() {
         if (error.message.includes('Server không phản hồi')) {
           errorMessage = error.message
         } else if (error.message.includes('Network')) {
-          errorMessage = `Lỗi mạng: ${error.message}. Kiểm tra xem backend đã khởi động chưa (${API_BASE_URL})`
+          errorMessage = `Lỗi mạng: ${error.message}`
         } else if (error.message.includes('timeout')) {
           errorMessage = `Hết thời gian chờ. Server đang chậm hoặc không phản hồi.`
         }
       }
 
-      setGenerateError(errorMessage)
+      toastError('Lỗi', errorMessage)
     } finally {
       setGenerating(false)
     }
@@ -225,7 +224,7 @@ export default function Home() {
           </div>
 
           {/* Ideas Grid Skeleton */}
-          <IdeasSkeleton count={6} />
+          <SkeletonList count={6} type="ideas" />
         </div>
       </div>
     )
@@ -257,22 +256,6 @@ export default function Home() {
             Tạo ý tưởng mới
           </Button>
         </div>
-
-        {/* Global Messages */}
-        {successMessage && (
-          <SuccessMessage
-            message={successMessage}
-            onDismiss={() => setSuccessMessage(null)}
-            autoDismissDelay={5000}
-          />
-        )}
-
-        {errorMessage && (
-          <ErrorMessage
-            message={errorMessage}
-            onDismiss={() => setErrorMessage(null)}
-          />
-        )}
 
         {/* AI Generation Section */}
         <Card>
@@ -352,21 +335,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {generateSuccess && (
-                <SuccessMessage
-                  message={generateSuccess}
-                  onDismiss={() => setGenerateSuccess(null)}
-                  autoDismissDelay={5000}
-                />
-              )}
-
-              {generateError && (
-                <ErrorMessage
-                  message={generateError}
-                  onDismiss={() => setGenerateError(null)}
-                />
-              )}
-
               <Button
                 type="submit"
                 disabled={generating}
@@ -420,7 +388,13 @@ export default function Home() {
           </div>
 
           {ideas.length === 0 ? (
-            <EmptyIdeas onAction={handleOpenCreateDialog} />
+            <EmptyState
+              icon={Lightbulb}
+              title="Chưa có ý tưởng nào"
+              description="Hãy tạo ý tưởng đầu tiên của bạn hoặc sử dụng AI để tự động sinh ý tưởng."
+              actionLabel="Tạo ý tưởng mới"
+              onAction={handleOpenCreateDialog}
+            />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {ideas.map((idea) => (
@@ -448,6 +422,15 @@ export default function Home() {
           idea={editingIdea}
           onSave={handleSaveIdea}
           isLoading={dialogLoading}
+        />
+
+        {/* Delete Confirmation Dialog */}
+        <DeleteDialog
+          isOpen={!!deleteId}
+          onClose={() => setDeleteId(null)}
+          title="Xóa ý tưởng"
+          itemName={ideas.find(i => i.id === deleteId)?.title}
+          onConfirm={confirmDelete}
         />
         </div>
       </div>

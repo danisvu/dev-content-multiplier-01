@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, FileText } from 'lucide-react'
+import { Plus, Package } from 'lucide-react'
+import Link from 'next/link'
 import { PageTransition } from '../components/PageTransition'
 import { 
   Button, 
@@ -10,20 +11,15 @@ import {
   Card,
   CardHeader,
   CardTitle,
-  CardDescription,
   CardContent,
   CardFooter,
   StatusBadge
 } from '../components/ui'
-import { toast, toastSuccess } from '@/lib/toast'
+import { toastSuccess } from '@/lib/toast'
 
-export default function BriefsPage() {
+export default function PacksPage() {
   const [loading, setLoading] = useState(false)
-  const [briefs, setBriefs] = useState<any[]>([])
-
-  const handleCreateBrief = () => {
-    toastSuccess('Coming Soon', 'Tính năng tạo brief đang được phát triển.')
-  }
+  const [packs, setPacks] = useState<any[]>([])
 
   if (loading) {
     return (
@@ -36,7 +32,7 @@ export default function BriefsPage() {
             </div>
             <div className="h-11 w-44 bg-muted animate-shimmer rounded" />
           </div>
-          <SkeletonList count={6} type="briefs" />
+          <SkeletonList count={6} type="drafts" />
         </div>
       </div>
     )
@@ -49,32 +45,34 @@ export default function BriefsPage() {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold">📋 Content Briefs</h1>
+              <h1 className="text-4xl font-bold">📦 Content Packs</h1>
               <p className="text-muted-foreground mt-2">
-                Tạo và quản lý brief nội dung chi tiết
+                Tạo và quản lý gói nội dung đa kênh
               </p>
             </div>
-            <Button onClick={handleCreateBrief} size="lg">
-              <Plus className="w-5 h-5 mr-2" />
-              Tạo brief mới
-            </Button>
+            <Link href="/packs/new">
+              <Button size="lg">
+                <Plus className="w-5 h-5 mr-2" />
+                Tạo pack mới
+              </Button>
+            </Link>
           </div>
 
           {/* Empty State */}
-          {briefs.length === 0 && (
+          {packs.length === 0 && (
             <EmptyState
-              icon={FileText}
-              title="Chưa có brief nào"
-              description="Tạo brief chi tiết để hướng dẫn việc tạo nội dung hiệu quả hơn."
-              actionLabel="Tạo brief đầu tiên"
-              onAction={handleCreateBrief}
+              icon={Package}
+              title="Chưa có pack nào"
+              description="Tạo content pack để xuất bản nội dung đến nhiều kênh cùng lúc."
+              actionLabel="Tạo pack đầu tiên"
+              onAction={() => window.location.href = '/packs/new'}
             />
           )}
 
-          {/* Briefs Grid (when data available) */}
-          {briefs.length > 0 && (
+          {/* Packs Grid (when data available) */}
+          {packs.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Brief cards will be rendered here */}
+              {/* Pack cards will be rendered here */}
             </div>
           )}
         </div>
@@ -82,3 +80,4 @@ export default function BriefsPage() {
     </PageTransition>
   )
 }
+
