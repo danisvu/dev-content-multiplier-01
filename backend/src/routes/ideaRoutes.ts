@@ -107,6 +107,44 @@ async function ideaRoutes(fastify: FastifyInstance) {
     }
   });
 
+  // PATCH /api/ideas/:id/status - Update idea status quickly
+  fastify.patch('/ideas/:id/status', {
+    schema: {
+      body: {
+        type: 'object',
+        required: ['status'],
+        properties: {
+          status: { 
+            type: 'string',
+            enum: ['pending', 'selected', 'rejected', 'generated'],
+            description: 'Status of the idea'
+          }
+        }
+      }
+    }
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const { id } = request.params as { id: string };
+      const { status } = request.body as { status: string };
+      
+      // Update only the status field
+      const idea = await ideaService.updateIdea(parseInt(id), { status });
+      
+      if (!idea) {
+        return reply.status(404).send({ error: 'Idea not found' });
+      }
+      
+      return reply.send({ 
+        success: true,
+        message: `Idea status updated to '${status}'`,
+        idea
+      });
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.status(500).send({ error: 'Internal server error' });
+    }
+  });
+
   // POST /api/ideas/generate - Generate AI-powered ideas
   fastify.post('/ideas/generate', {
     schema: {

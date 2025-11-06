@@ -6,6 +6,8 @@
 
 - **Quản lý ý tưởng thủ công**: Tạo, đọc, cập nhật, xóa ý tưởng nội dung
 - **Sinh ý tưởng bằng AI**: Tự động tạo 10 ý tưởng nội dung chất lượng cao
+- **🆕 Generate Brief từ Idea**: AI tự động tạo kế hoạch nội dung chi tiết từ ý tưởng
+- **Quản lý Content Briefs**: Lưu trữ và quản lý các bản kế hoạch nội dung
 - **Hỗ trợ nhiều model AI**: Gemini (Google) và Deepseek
 - **Validate JSON với AJV**: Đảm bảo dữ liệu từ AI luôn đúng định dạng
 - **Retry với exponential backoff**: Tự động thử lại khi API lỗi
@@ -92,8 +94,6 @@ Frontend sẽ chạy tại `http://localhost:3910`
 - `POST /api/ideas` - Tạo ý tưởng mới
 - `PUT /api/ideas/:id` - Cập nhật ý tưởng
 - `DELETE /api/ideas/:id` - Xóa ý tưởng
-
-### AI Generation
 - `POST /api/ideas/generate` - Tự động sinh ý tưởng bằng AI
 
 **Request body cho `/api/ideas/generate`:**
@@ -106,12 +106,51 @@ Frontend sẽ chạy tại `http://localhost:3910`
 }
 ```
 
+### 🆕 Briefs Management
+- `GET /api/briefs` - Lấy tất cả briefs
+- `GET /api/briefs/:id` - Lấy brief theo ID
+- `POST /api/briefs` - Tạo brief mới
+- `PUT /api/briefs/:id` - Cập nhật brief
+- `DELETE /api/briefs/:id` - Xóa brief
+- `POST /api/briefs/generate` - **Tự động sinh brief từ idea bằng AI** 🤖
+- `PATCH /api/ideas/:id/status` - 🔒 **Cập nhật status của idea** (required: 'selected' để generate brief)
+
+**Request body cho `/api/briefs/generate`:**
+```json
+{
+  "idea_id": 2,
+  "model": "gemini",
+  "temperature": 0.7,
+  "additional_context": "Tập trung vào các chiến lược marketing thực tế"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Brief generated successfully by AI",
+  "brief": {
+    "id": 10,
+    "idea_id": 2,
+    "title": "Chiến Lược Bán Tivi Hiệu Quả Mùa Giáng Sinh",
+    "content_plan": "Bản kế hoạch chi tiết...",
+    "target_audience": "Khách hàng mua sắm mùa lễ...",
+    "key_points": ["Khuyến mãi", "Bundle deals", "Free delivery"],
+    "tone": "friendly, promotional",
+    "word_count": 1500,
+    "keywords": ["tivi", "giáng sinh", "khuyến mãi"],
+    "status": "draft"
+  }
+}
+```
+
 ### System
 - `GET /health` - Health check
 
 ## 🗄️ Database Schema
 
-Bảng `ideas` có các trường:
+### Bảng `ideas`
 - `id` (SERIAL PRIMARY KEY)
 - `title` (VARCHAR(255) NOT NULL)
 - `description` (TEXT)
@@ -120,6 +159,20 @@ Bảng `ideas` có các trường:
 - `industry` (VARCHAR(100))
 - `status` (VARCHAR(50) DEFAULT 'pending')
 - `created_at` (TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)
+
+### 🆕 Bảng `briefs`
+- `id` (SERIAL PRIMARY KEY)
+- `idea_id` (INTEGER REFERENCES ideas(id)) - Liên kết với idea
+- `title` (VARCHAR(255) NOT NULL)
+- `content_plan` (TEXT NOT NULL) - Kế hoạch nội dung chi tiết
+- `target_audience` (TEXT NOT NULL) - Đối tượng mục tiêu
+- `key_points` (TEXT[] NOT NULL) - Các điểm chính cần cover
+- `tone` (VARCHAR(100)) - Tone viết
+- `word_count` (INTEGER) - Số từ đề xuất
+- `keywords` (TEXT[]) - Từ khóa SEO
+- `status` (VARCHAR(50) DEFAULT 'draft') - draft, review, approved, published
+- `created_at` (TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)
+- `updated_at` (TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)
 
 ## 💡 Sử dụng
 
@@ -133,7 +186,47 @@ Bảng `ideas` có các trường:
 3. Click "🚀 Generate Ideas"
 4. Chờ loading spinner và xem 10 ý tưởng được tạo
 
-### 2. Quản lý ý tưởng thủ công
+### 2. 🆕 Generate Brief từ Idea (AI-Powered)
+
+⚠️ **Lưu ý**: Idea phải có `status = 'selected'` trước khi generate brief.
+
+```bash
+# Bước 1: Update idea status thành 'selected'
+curl -X PATCH http://localhost:3911/api/ideas/2/status \
+  -H "Content-Type: application/json" \
+  -d '{"status": "selected"}'
+
+# Bước 2: Generate brief
+curl -X POST http://localhost:3911/api/briefs/generate \
+  -H "Content-Type: application/json" \
+  -d '{
+    "idea_id": 2,
+    "model": "gemini",
+    "temperature": 0.7,
+    "additional_context": "Focus on practical examples"
+  }'
+
+# Hoặc dùng test script (tự động làm cả 2 bước)
+./test-brief-validation.sh
+```
+
+**Kết quả:** AI sẽ tạo ra một brief chi tiết bao gồm:
+- ✅ Title (tiêu đề hấp dẫn)
+- ✅ Content Plan (kế hoạch 3-5 đoạn)
+- ✅ Target Audience (đối tượng mục tiêu)
+- ✅ Key Points (3-10 điểm chính)
+- ✅ Tone (friendly, professional, etc.)
+- ✅ Word Count (số từ đề xuất)
+- ✅ Keywords (5-10 từ khóa SEO)
+
+**🔒 Status Validation:**
+- Chỉ ideas có `status = 'selected'` mới được generate brief
+- Đảm bảo quality control và tiết kiệm AI quota
+- Xem chi tiết: [STATUS_VALIDATION_GUIDE.md](./STATUS_VALIDATION_GUIDE.md)
+
+**Chi tiết kỹ thuật**: [BRIEF_GENERATION_GUIDE.md](./BRIEF_GENERATION_GUIDE.md)
+
+### 3. Quản lý ý tưởng thủ công
 1. Sử dụng form "Tạo ý tưởng mới" để thêm ý tưởng thủ công
 2. Xem danh sách tất cả ý tưởng ở bên phải
 3. Xóa ý tưởng không cần thiết

@@ -76,3 +76,25 @@ export {
   type DeleteDialogProps
 } from './modal'
 
+// New Components
+export { Avatar, AvatarImage, AvatarFallback } from './avatar'
+export {
+  Sheet,
+  SheetPortal,
+  SheetOverlay,
+  SheetTrigger,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetFooter,
+  SheetTitle,
+  SheetDescription,
+} from './sheet'
+export { Separator } from './separator'
+export { 
+  Tooltip, 
+  TooltipTrigger, 
+  TooltipContent, 
+  TooltipProvider 
+} from './tooltip'
+export { ScrollArea, ScrollBar } from './scroll-area'

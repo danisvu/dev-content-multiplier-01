@@ -2,6 +2,7 @@ import fastify from 'fastify';
 import cors from '@fastify/cors';
 import dotenv from 'dotenv';
 import ideaRoutes from './routes/ideaRoutes';
+import briefRoutes from './routes/briefRoutes';
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ server.register(cors, {
 
 // Register routes
 server.register(ideaRoutes, { prefix: '/api' });
+server.register(briefRoutes, { prefix: '/api' });
 
 // Health check endpoint
 server.get('/health', async (request, reply) => {
