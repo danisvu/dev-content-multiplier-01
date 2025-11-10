@@ -115,3 +115,21 @@ export {
 export { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from './accordion'
 export { Input, type InputProps } from './input'
 export { Label } from './label'
+
+// Feature Components - Export & Analytics
+export {
+  ExportOptions,
+  type ExportOptionsProps
+} from '../ExportOptions'
+export {
+  SharePreviewLink,
+  type SharePreviewLinkProps
+} from '../SharePreviewLink'
+export {
+  AnalyticsDashboard,
+  type AnalyticsDashboardProps
+} from '../AnalyticsDashboard'
+export {
+  PlatformCostTracker,
+  type PlatformCostTrackerProps
+} from '../PlatformCostTracker'

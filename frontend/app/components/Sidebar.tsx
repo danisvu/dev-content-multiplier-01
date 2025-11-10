@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { 
+import {
   Lightbulb,
   FileText,
   Pen,
@@ -12,7 +12,8 @@ import {
   X,
   LogOut,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Zap
 } from 'lucide-react'
 import { Button } from './ui/button'
 import { Sheet, SheetContent, SheetTrigger } from './ui/sheet'
@@ -39,6 +40,7 @@ const navItems: NavItem[] = [
   { href: '/ideas', label: 'Ý tưởng', icon: Lightbulb },
   { href: '/briefs', label: 'Briefs', icon: FileText },
   { href: '/drafts', label: 'Bản nháp', icon: Pen },
+  { href: '/publisher', label: 'Multi-platform Publisher', icon: Zap },
   { href: '/settings', label: 'Cài đặt', icon: Settings },
 ]
 

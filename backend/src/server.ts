@@ -7,6 +7,10 @@ import derivativeRoutes from './routes/derivativeRoutes';
 import publishingRoutes from './routes/publishingRoutes';
 import versionControlRoutes from './routes/versionControlRoutes';
 import engagementRoutes from './routes/engagementRoutes';
+import { exportRoutes } from './routes/exportRoutes';
+import { sharingRoutes } from './routes/sharingRoutes';
+import { analyticsRoutes } from './routes/analyticsRoutes';
+import { costTrackingRoutes } from './routes/costTrackingRoutes';
 
 dotenv.config();
 
@@ -27,6 +31,10 @@ server.register(derivativeRoutes, { prefix: '/api' });
 server.register(publishingRoutes, { prefix: '/api' });
 server.register(versionControlRoutes, { prefix: '/api' });
 server.register(engagementRoutes, { prefix: '/api' });
+server.register(exportRoutes, { prefix: '/api/exports' });
+server.register(sharingRoutes, { prefix: '/api/sharing' });
+server.register(analyticsRoutes, { prefix: '/api/analytics' });
+server.register(costTrackingRoutes, { prefix: '/api/costs' });
 
 // Health check endpoint
 server.get('/health', async (request, reply) => {
