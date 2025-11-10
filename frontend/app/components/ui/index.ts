@@ -98,3 +98,20 @@ export {
   TooltipProvider 
 } from './tooltip'
 export { ScrollArea, ScrollBar } from './scroll-area'
+export { Progress } from './progress'
+export {
+  AlertDialog,
+  AlertDialogPortal,
+  AlertDialogOverlay,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from './alert-dialog'
+export { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from './accordion'
+export { Input, type InputProps } from './input'
+export { Label } from './label'

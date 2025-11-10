@@ -4,6 +4,14 @@ import { useState } from 'react'
 import { IdeasSkeleton } from './IdeasSkeleton'
 import { BriefSkeleton, BriefListSkeleton } from './BriefSkeleton'
 import { DraftSkeleton, DraftListSkeleton } from './DraftSkeleton'
+import { 
+  TwitterPreviewSkeleton, 
+  LinkedInPreviewSkeleton, 
+  FacebookPreviewSkeleton, 
+  InstagramPreviewSkeleton, 
+  TikTokPreviewSkeleton,
+  PreviewSkeletonsGrid 
+} from './PreviewSkeletons'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 import { Button } from '../ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
@@ -28,13 +36,91 @@ export function SkeletonShowcase() {
         </div>
 
         {showSkeleton && (
-          <Tabs defaultValue="ideas" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="ideas">Ideas Grid</TabsTrigger>
-              <TabsTrigger value="brief">Brief Detail</TabsTrigger>
+          <Tabs defaultValue="previews" className="w-full">
+            <TabsList className="grid w-full grid-cols-5">
+              <TabsTrigger value="previews">Previews</TabsTrigger>
+              <TabsTrigger value="ideas">Ideas</TabsTrigger>
+              <TabsTrigger value="brief">Brief</TabsTrigger>
               <TabsTrigger value="brief-list">Brief List</TabsTrigger>
-              <TabsTrigger value="draft">Draft Editor</TabsTrigger>
+              <TabsTrigger value="draft">Draft</TabsTrigger>
             </TabsList>
+
+            {/* Social Media Preview Skeletons */}
+            <TabsContent value="previews" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Preview Skeletons - All Platforms</CardTitle>
+                  <CardDescription>
+                    Grid với tất cả các platform preview skeletons với shimmer effect
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <PreviewSkeletonsGrid />
+                </CardContent>
+              </Card>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>TwitterPreviewSkeleton</CardTitle>
+                    <CardDescription>
+                      Skeleton cho Twitter post preview
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <TwitterPreviewSkeleton />
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>LinkedInPreviewSkeleton</CardTitle>
+                    <CardDescription>
+                      Skeleton cho LinkedIn post preview
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <LinkedInPreviewSkeleton />
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>FacebookPreviewSkeleton</CardTitle>
+                    <CardDescription>
+                      Skeleton cho Facebook post preview
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <FacebookPreviewSkeleton />
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>InstagramPreviewSkeleton</CardTitle>
+                    <CardDescription>
+                      Skeleton cho Instagram post preview
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <InstagramPreviewSkeleton />
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>TikTokPreviewSkeleton</CardTitle>
+                    <CardDescription>
+                      Skeleton cho TikTok video preview
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <TikTokPreviewSkeleton />
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
 
             {/* Ideas Grid Skeleton */}
             <TabsContent value="ideas" className="space-y-4">

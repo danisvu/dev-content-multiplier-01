@@ -26,6 +26,7 @@ import {
 } from './ui/tooltip'
 import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
+import { ThemeToggle } from './ThemeToggle'
 
 interface NavItem {
   href: string
@@ -146,6 +147,32 @@ export function Sidebar({ className }: SidebarProps) {
 
       {/* Footer */}
       <div className="p-3 space-y-2">
+        {/* Theme Toggle & Settings */}
+        <div className="flex items-center gap-2 px-1">
+          <ThemeToggle />
+          <div className="flex-1" />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href="/settings">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9"
+                  >
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                Cài đặt
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+
+        <Separator />
+
         {/* App version */}
         <div className="px-3 py-2 rounded-lg bg-muted/50">
           <div className="flex items-center justify-between text-xs">

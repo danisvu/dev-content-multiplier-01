@@ -6,9 +6,12 @@ import { Button } from './button'
 import { cn } from '@/lib/utils'
 
 export interface EmptyStateProps {
-  icon?: LucideIcon
+  icon?: LucideIcon | React.ElementType
   title: string
   description: string
+  ctaLabel?: string
+  onClick?: () => void
+  // Legacy support
   actionLabel?: string
   onAction?: () => void
   className?: string
@@ -21,6 +24,9 @@ export function EmptyState({
   icon: Icon,
   title,
   description,
+  ctaLabel,
+  onClick,
+  // Legacy support
   actionLabel,
   onAction,
   className,
@@ -28,6 +34,9 @@ export function EmptyState({
   variant = 'default',
   size = 'md',
 }: EmptyStateProps) {
+  // Use new prop names, fallback to legacy
+  const finalCtaLabel = ctaLabel || actionLabel
+  const finalOnClick = onClick || onAction
   // Size variants
   const sizeConfig = {
     sm: {
@@ -126,18 +135,21 @@ export function EmptyState({
       </motion.div>
 
       {/* Action Button */}
-      {onAction && actionLabel && (
+      {finalOnClick && finalCtaLabel && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
           <Button 
-            onClick={onAction} 
+            onClick={finalOnClick} 
             size={config.button}
             variant="default"
+            className="shadow-lg hover:shadow-xl transition-shadow duration-300"
           >
-            {actionLabel}
+            {finalCtaLabel}
           </Button>
         </motion.div>
       )}
