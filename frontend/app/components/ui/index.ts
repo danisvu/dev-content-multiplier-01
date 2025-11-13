@@ -115,6 +115,7 @@ export {
 export { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from './accordion'
 export { Input, type InputProps } from './input'
 export { Label } from './label'
+export { Checkbox } from './checkbox'
 
 // Feature Components - Export & Analytics
 export {
