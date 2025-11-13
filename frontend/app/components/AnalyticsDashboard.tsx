@@ -13,7 +13,7 @@ export interface FunnelStage {
 }
 
 export interface AnalyticsDashboardProps {
-  platform: 'twitter' | 'linkedin' | 'facebook' | 'instagram' | 'tiktok'
+  platform: 'twitter' | 'linkedin' | 'facebook' | 'instagram' | 'tiktok' | 'mailchimp' | 'wordpress'
   metrics?: {
     views?: number
     engagement?: number
@@ -56,6 +56,18 @@ const PLATFORM_FUNNEL_DATA: Record<string, FunnelStage[]> = {
     { name: 'Favorites', value: 1840, color: 'from-red-500 to-pink-500' },
     { name: 'Shares', value: 425, color: 'from-pink-500 to-purple-500' },
   ],
+  mailchimp: [
+    { name: 'Sent', value: 15000, color: 'from-yellow-500 to-orange-600' },
+    { name: 'Opened', value: 4500, color: 'from-orange-400 to-red-500' },
+    { name: 'Clicked', value: 1125, color: 'from-red-400 to-pink-500' },
+    { name: 'Converted', value: 315, color: 'from-pink-400 to-purple-500' },
+  ],
+  wordpress: [
+    { name: 'Page Views', value: 8200, color: 'from-blue-600 to-cyan-600' },
+    { name: 'Unique Visitors', value: 3100, color: 'from-cyan-500 to-teal-500' },
+    { name: 'Comments', value: 620, color: 'from-teal-400 to-green-500' },
+    { name: 'Shares', value: 186, color: 'from-green-400 to-emerald-500' },
+  ],
 }
 
 export function AnalyticsDashboard({ platform, metrics, className = '' }: AnalyticsDashboardProps) {
@@ -65,7 +77,7 @@ export function AnalyticsDashboard({ platform, metrics, className = '' }: Analyt
   const percentages = funnelData.map((stage) => (stage.value / maxValue) * 100)
 
   const conversionRates = funnelData.map((stage, index) => {
-    if (index === 0) return 100
+    if (index === 0) return '100'
     const previousValue = funnelData[index - 1]?.value || 1
     return ((stage.value / previousValue) * 100).toFixed(1)
   })

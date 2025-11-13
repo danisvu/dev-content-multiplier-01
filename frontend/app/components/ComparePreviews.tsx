@@ -15,7 +15,7 @@ export interface ComparePreviewsProps {
   authorUsername?: string
   avatarUrl?: string
   className?: string
-  showPlatforms?: ('twitter' | 'linkedin' | 'facebook' | 'instagram' | 'tiktok')[]
+  showPlatforms?: ('twitter' | 'linkedin' | 'facebook' | 'instagram' | 'tiktok' | 'mailchimp' | 'wordpress')[]
 }
 
 export function ComparePreviews({
@@ -24,7 +24,7 @@ export function ComparePreviews({
   authorUsername = '@johndoe',
   avatarUrl = '',
   className,
-  showPlatforms = ['twitter', 'linkedin', 'facebook', 'instagram', 'tiktok']
+  showPlatforms = ['twitter', 'linkedin', 'facebook', 'instagram', 'tiktok', 'mailchimp', 'wordpress']
 }: ComparePreviewsProps) {
   const platformComponents = {
     twitter: (
@@ -32,9 +32,9 @@ export function ComparePreviews({
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Twitter</h3>
         <TwitterPreview
           content={content}
-          authorName={authorName}
-          authorUsername={authorUsername}
-          avatarUrl={avatarUrl}
+          userName={authorName}
+          userHandle={authorUsername}
+          userAvatar={avatarUrl}
         />
       </div>
     ),
@@ -43,9 +43,9 @@ export function ComparePreviews({
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">LinkedIn</h3>
         <LinkedInPreview
           content={content}
-          authorName={authorName}
-          authorUsername={authorUsername}
-          avatarUrl={avatarUrl}
+          userName={authorName}
+          userTitle={authorUsername}
+          userAvatar={avatarUrl}
         />
       </div>
     ),
@@ -80,6 +80,40 @@ export function ComparePreviews({
           authorUsername={authorUsername}
           avatarUrl={avatarUrl}
         />
+      </div>
+    ),
+    mailchimp: (
+      <div className="space-y-3">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Mailchimp</h3>
+        <Card className="border border-gray-200 dark:border-gray-700">
+          <CardContent className="pt-6">
+            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-300 dark:border-gray-600">
+              <div className="text-sm font-mono whitespace-pre-wrap text-gray-700 dark:text-gray-300">
+                {content}
+              </div>
+            </div>
+            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded text-xs text-blue-700 dark:text-blue-300">
+              📧 Email template preview
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    ),
+    wordpress: (
+      <div className="space-y-3">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">WordPress</h3>
+        <Card className="border border-gray-200 dark:border-gray-700">
+          <CardContent className="pt-6">
+            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-300 dark:border-gray-600">
+              <div className="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300">
+                <div className="text-sm font-mono whitespace-pre-wrap">{content}</div>
+              </div>
+            </div>
+            <div className="mt-4 p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded text-xs text-purple-700 dark:text-purple-300">
+              📝 Blog post preview (WordPress/HTML)
+            </div>
+          </CardContent>
+        </Card>
       </div>
     )
   }

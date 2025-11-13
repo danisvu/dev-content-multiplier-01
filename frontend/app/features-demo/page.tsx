@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AppLayout } from '@/components/AppLayout';
+import { AppLayout } from '../components/AppLayout';
 import {
   ExportOptions,
   SharePreviewLink,
-  FunnelAnalyticsDashboard,
   PlatformCostTracker,
-} from '@/components/ui';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui';
+} from '../components/ui';
+import { AnalyticsDashboard } from '../components/AnalyticsDashboard';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui';
 
 export default function FeaturesDemo() {
   const briefId = 1;
@@ -147,7 +147,7 @@ export default function FeaturesDemo() {
                     Track content through your publishing funnel with real-time metrics.
                   </p>
                 </div>
-                <FunnelAnalyticsDashboard platform="twitter" />
+                <AnalyticsDashboard platform="twitter" />
               </div>
 
               {/* Analytics Metrics */}

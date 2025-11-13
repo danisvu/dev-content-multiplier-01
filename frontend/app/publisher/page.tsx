@@ -14,7 +14,6 @@ import {
   TabsTrigger,
   Button,
 } from '../components/ui'
-import { DerivativeTabs } from '../components/DerivativeTabs'
 import { ComparePreviews } from '../components/ComparePreviews'
 import { ResponsivePreview } from '../components/ResponsivePreview'
 import { ExportOptions } from '../components/ExportOptions'
@@ -23,7 +22,7 @@ import { motion } from 'framer-motion'
 import { Zap, Settings, Eye, BarChart3, FileUp, Layers } from 'lucide-react'
 import { toast } from 'sonner'
 
-type Platform = 'twitter' | 'linkedin' | 'facebook' | 'instagram' | 'tiktok'
+type Platform = 'twitter' | 'linkedin' | 'facebook' | 'instagram' | 'tiktok' | 'mailchimp' | 'wordpress'
 
 interface PreviewData {
   platform: Platform
@@ -61,6 +60,18 @@ const SAMPLE_PREVIEWS: PreviewData[] = [
     content:
       'POV: You just found the cheat code for viral content 🎬💯\n\nNo more boring posts. No more hours of editing. Just pure, AI-powered magic. ✨\n\nFrom ideas to viral videos - we handle it all. Your content, amplified. 🚀\n\n#FYP #ContentCreator #AI #TikTok #Viral',
     characterCount: 198,
+  },
+  {
+    platform: 'mailchimp',
+    content:
+      'Subject: Unlock Your Content Multiplier - 50% Off This Week!\n\nHi Friend,\n\nDid you know that 89% of marketers struggle with multi-platform content creation? The Content Multiplier solves this.\n\n🎯 Generate platform-optimized content automatically\n📊 Track performance across all channels\n🚀 Save hours each week\n\nSpecial offer: 50% off for new users this week only!\n\nBest regards,\nThe Content Multiplier Team',
+    characterCount: 384,
+  },
+  {
+    platform: 'wordpress',
+    content:
+      '<!-- wp:heading -->\n<h1>Introducing the Ultimate Content Multiplier Platform</h1>\n<!-- /wp:heading -->\n\n<!-- wp:paragraph -->\n<p>In today\'s digital landscape, creating engaging content across multiple platforms is more important than ever. But let\'s face it—managing content for Twitter, LinkedIn, Facebook, Instagram, and TikTok simultaneously can be overwhelming.</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:heading {\"level\":2} -->\n<h2>How Content Multiplier Transforms Your Workflow</h2>\n<!-- /wp:heading -->\n\n<!-- wp:list -->\n<ul><li>One-click publishing to all platforms</li><li>AI-powered content optimization</li><li>Real-time analytics dashboard</li></ul>\n<!-- /wp:list -->',
+    characterCount: 456,
   },
 ]
 
@@ -130,12 +141,21 @@ export default function PublisherPage() {
                   </CardTitle>
                   <CardDescription>Select platforms to publish to</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <DerivativeTabs
-                    selectedPlatforms={selectedPlatforms}
-                    onPlatformChange={handlePlatformToggle}
-                    allowMultiple={true}
-                  />
+                <CardContent className="space-y-2">
+                  {SAMPLE_PREVIEWS.map((preview) => (
+                    <button
+                      key={preview.platform}
+                      onClick={() => handlePlatformToggle(preview.platform)}
+                      className={`w-full p-3 rounded-lg border-2 transition-all text-left ${
+                        selectedPlatforms.includes(preview.platform)
+                          ? 'border-primary bg-primary/10'
+                          : 'border-muted bg-muted/30 hover:border-primary/50'
+                      }`}
+                    >
+                      <div className="font-semibold capitalize">{preview.platform}</div>
+                      <div className="text-xs text-muted-foreground mt-1">{preview.characterCount} chars</div>
+                    </button>
+                  ))}
                 </CardContent>
               </Card>
 
@@ -267,8 +287,11 @@ export default function PublisherPage() {
 
                 {/* Compare Tab */}
                 <TabsContent value="compare" className="space-y-6">
-                  {filteredPreviews.length >= 2 ? (
-                    <ComparePreviews previews={filteredPreviews} />
+                  {selectedPlatforms.length >= 2 && currentPreview ? (
+                    <ComparePreviews
+                      content={currentPreview.content}
+                      showPlatforms={selectedPlatforms}
+                    />
                   ) : (
                     <Card className="border-0 shadow-lg">
                       <CardContent className="pt-6">
