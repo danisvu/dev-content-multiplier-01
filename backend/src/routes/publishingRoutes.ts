@@ -215,6 +215,12 @@ async function publishingRoutes(fastify: FastifyInstance) {
     try {
       const { apiKey, campaignName, campaignSubject, emailContent, audienceId } = request.body;
 
+      // Log API key details
+      console.log('🔑 [BACKEND] Received apiKey:', apiKey);
+      console.log('🔑 [BACKEND] API key length:', apiKey?.length);
+      console.log('🔑 [BACKEND] API key starts with:', apiKey?.substring(0, 30));
+      console.log('🔑 [BACKEND] API key ends with:', apiKey?.substring(apiKey.length - 10));
+
       // Validate required fields
       if (!apiKey || !campaignName || !campaignSubject || !emailContent) {
         return reply.status(400).send({
@@ -231,19 +237,23 @@ async function publishingRoutes(fastify: FastifyInstance) {
         audienceId
       });
 
-      // Log the Mailchimp publishing event
-      await eventLogService.logEvent({
-        eventType: 'publishing.mailchimp',
-        entityType: 'campaign',
-        userId: request.headers['x-user-id']?.toString() || 'anonymous',
-        metadata: {
-          campaignId: result.campaignId,
-          campaignName: campaignName,
-          emailsSent: result.emailsSent,
-          subscribers: result.subscribers
-        },
-        status: result.success ? 'success' : 'failed'
-      });
+      // Log the Mailchimp publishing event (skip if table doesn't exist)
+      try {
+        await eventLogService.logEvent({
+          eventType: 'publishing.mailchimp',
+          entityType: 'campaign',
+          userId: request.headers['x-user-id']?.toString() || 'anonymous',
+          metadata: {
+            campaignId: result.campaignId,
+            campaignName: campaignName,
+            emailsSent: result.emailsSent,
+            subscribers: result.subscribers
+          },
+          status: result.success ? 'success' : 'failed'
+        });
+      } catch (logError) {
+        console.warn('Warning: Could not log event (database table may not exist):', logError);
+      }
 
       return reply.status(200).send({
         success: result.success,
@@ -256,13 +266,18 @@ async function publishingRoutes(fastify: FastifyInstance) {
     } catch (error) {
       console.error('Error creating Mailchimp campaign:', error);
 
-      await eventLogService.logEvent({
-        eventType: 'publishing.mailchimp',
-        entityType: 'campaign',
-        userId: request.headers['x-user-id']?.toString() || 'anonymous',
-        status: 'error',
-        errorMessage: error instanceof Error ? error.message : 'Unknown error'
-      });
+      // Try to log error (skip if table doesn't exist)
+      try {
+        await eventLogService.logEvent({
+          eventType: 'publishing.mailchimp',
+          entityType: 'campaign',
+          userId: request.headers['x-user-id']?.toString() || 'anonymous',
+          status: 'error',
+          errorMessage: error instanceof Error ? error.message : 'Unknown error'
+        });
+      } catch (logError) {
+        console.warn('Warning: Could not log error event:', logError);
+      }
 
       return reply.status(500).send({
         success: false,

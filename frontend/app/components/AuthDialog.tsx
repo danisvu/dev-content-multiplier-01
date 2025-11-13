@@ -65,6 +65,11 @@ export function AuthDialog({ platform, isOpen, onClose, onConnect }: AuthDialogP
           toast.error(`Please enter your ${platform} API key`)
           return
         }
+        // Validate token is not empty
+        if (token.trim().length === 0) {
+          toast.error(`API key cannot be empty`)
+          return
+        }
       }
 
       // Simulate API call
@@ -76,6 +81,9 @@ export function AuthDialog({ platform, isOpen, onClose, onConnect }: AuthDialogP
         token: authType === 'token' ? token : undefined,
       }
 
+      console.log('🔑 AuthDialog - Raw token value:', token)
+      console.log('🔑 AuthDialog - Token length:', token?.length)
+      console.log('🔑 AuthDialog - Trimmed token:', token?.trim())
       console.log('📤 AuthDialog sending credentials:', credentials)
       onConnect(credentials)
 

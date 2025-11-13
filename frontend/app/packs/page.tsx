@@ -25,6 +25,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '../components/ui'
+import { AuthDialog } from '../components/AuthDialog'
 import { toast } from 'sonner'
 
 const API_BASE_URL = 'http://localhost:3911/api'
@@ -59,6 +60,16 @@ interface PublishResult {
   }
 }
 
+interface AuthState {
+  platform: Platform
+  isAuthenticated: boolean
+  userName?: string
+  lastConnected?: Date
+  token?: string
+  username?: string
+  password?: string
+}
+
 export default function PacksPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -70,9 +81,86 @@ export default function PacksPage() {
   const [publishResults, setPublishResults] = useState<PublishResult[]>([])
   const [showResults, setShowResults] = useState(false)
 
+  // Auth state management
+  const [authStates, setAuthStates] = useState<Record<Platform, AuthState>>({
+    twitter: { platform: 'twitter', isAuthenticated: false },
+    linkedin: { platform: 'linkedin', isAuthenticated: false },
+    facebook: { platform: 'facebook', isAuthenticated: false },
+    instagram: { platform: 'instagram', isAuthenticated: false },
+    tiktok: { platform: 'tiktok', isAuthenticated: false },
+    mailchimp: { platform: 'mailchimp', isAuthenticated: false },
+    wordpress: { platform: 'wordpress', isAuthenticated: false },
+  })
+  const [isLoaded, setIsLoaded] = useState(false)
+  const [authDialogOpen, setAuthDialogOpen] = useState(false)
+  const [selectedAuthPlatform, setSelectedAuthPlatform] = useState<Platform>('mailchimp')
+
+  // Load auth state from localStorage on mount
+  useEffect(() => {
+    const savedAuth = localStorage.getItem('publisher_auth_state')
+    console.log('📂 [PACKS] Loading from localStorage:', savedAuth)
+    if (savedAuth) {
+      try {
+        const parsed = JSON.parse(savedAuth)
+        console.log('✅ [PACKS] Parsed auth state:', parsed)
+        // Convert lastConnected string back to Date if it exists
+        const restored = Object.fromEntries(
+          Object.entries(parsed).map(([key, auth]: [string, any]) => {
+            const restoredAuth = {
+              ...auth,
+              lastConnected: auth.lastConnected ? new Date(auth.lastConnected) : undefined,
+            }
+            console.log(`🔄 [PACKS] Restoring ${key}:`, restoredAuth)
+            return [key, restoredAuth]
+          })
+        )
+        console.log('🎯 [PACKS] Final restored state:', restored)
+        setAuthStates(restored)
+      } catch (error) {
+        console.error('[PACKS] Failed to load auth state:', error)
+      }
+    } else {
+      console.log('ℹ️ [PACKS] No saved auth state found in localStorage')
+    }
+    setIsLoaded(true)
+  }, [])
+
+  // Save auth state to localStorage (only after initial load)
+  useEffect(() => {
+    if (isLoaded) {
+      console.log('💾 [PACKS] Saving auth state to localStorage:', authStates)
+      localStorage.setItem('publisher_auth_state', JSON.stringify(authStates))
+    }
+  }, [authStates, isLoaded])
+
   useEffect(() => {
     fetchBriefs()
   }, [])
+
+  const handleAuthSuccess = (credentials: { username?: string; password?: string; token?: string }) => {
+    const platform = selectedAuthPlatform
+    console.log('🔐 [PACKS] handleAuthSuccess called with credentials:', credentials)
+    const newAuthState = {
+      ...authStates[platform],
+      isAuthenticated: true,
+      userName: credentials.username || credentials.token?.substring(0, 20) + '...' || 'Connected',
+      lastConnected: new Date(),
+      token: credentials.token,
+      username: credentials.username,
+      password: credentials.password,
+    }
+    console.log('💾 [PACKS] New auth state to save:', newAuthState)
+    setAuthStates((prev) => {
+      const updated = {
+        ...prev,
+        [platform]: newAuthState,
+      }
+      console.log('📝 [PACKS] Full auth states after update:', updated)
+      return updated
+    })
+    toast.success(`Successfully connected to ${platform}!`)
+    setAuthDialogOpen(false)
+  }
 
   const fetchBriefs = async () => {
     try {
@@ -141,6 +229,7 @@ export default function PacksPage() {
         if (platform === 'mailchimp') {
           // Get Mailchimp API key from localStorage
           const authState = localStorage.getItem('publisher_auth_state')
+          console.log('📂 [PACKS] Retrieved raw auth state:', authState)
           if (!authState) {
             results.push({
               platform,
@@ -153,7 +242,12 @@ export default function PacksPage() {
 
           try {
             const authStates = JSON.parse(authState)
+            console.log('📂 [PACKS] Parsed auth states:', authStates)
             const mailchimpAuth = authStates.mailchimp
+            console.log('📂 [PACKS] Mailchimp auth object:', mailchimpAuth)
+            console.log('📂 [PACKS] API token value:', mailchimpAuth?.token)
+            console.log('📂 [PACKS] API token length:', mailchimpAuth?.token?.length)
+
             if (!mailchimpAuth?.token) {
               results.push({
                 platform,
@@ -191,12 +285,19 @@ export default function PacksPage() {
             `
 
             // Call backend Mailchimp API endpoint
-            const response = await axios.post(`${API_BASE_URL}/publishing/mailchimp`, {
+            const payload = {
               apiKey: mailchimpAuth.token,
               campaignName: `Content Batch - ${new Date().toLocaleDateString()}`,
               campaignSubject: `New Content - ${selectedBriefsData.map(b => b.title).join(', ')}`,
               emailContent: emailContent,
+            }
+            console.log('🚀 [PACKS] Sending to backend:', {
+              apiKey: payload.apiKey,
+              apiKeyLength: payload.apiKey?.length,
+              campaignName: payload.campaignName,
+              campaignSubject: payload.campaignSubject,
             })
+            const response = await axios.post(`${API_BASE_URL}/publishing/mailchimp`, payload)
 
             results.push({
               platform,
@@ -396,6 +497,28 @@ export default function PacksPage() {
               </DialogHeader>
 
               <div className="space-y-4 py-4">
+                {/* Auth Status for Mailchimp */}
+                {selectedPlatforms.has('mailchimp') && !authStates.mailchimp.isAuthenticated && (
+                  <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg space-y-3">
+                    <p className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
+                      ⚠️ Mailchimp Authentication Required
+                    </p>
+                    <p className="text-xs text-yellow-700 dark:text-yellow-400">
+                      Please connect your Mailchimp account to enable email publishing.
+                    </p>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setSelectedAuthPlatform('mailchimp')
+                        setAuthDialogOpen(true)
+                      }}
+                      className="w-full"
+                    >
+                      Connect Mailchimp
+                    </Button>
+                  </div>
+                )}
+
                 <div className="space-y-3">
                   <p className="text-sm font-medium">Chọn Platforms:</p>
                   <div className="grid grid-cols-2 gap-3">
@@ -428,7 +551,16 @@ export default function PacksPage() {
                 </Button>
                 <Button
                   onClick={handlePublish}
-                  disabled={publishing || selectedPlatforms.size === 0}
+                  disabled={
+                    publishing ||
+                    selectedPlatforms.size === 0 ||
+                    (selectedPlatforms.has('mailchimp') && !authStates.mailchimp.isAuthenticated)
+                  }
+                  title={
+                    selectedPlatforms.has('mailchimp') && !authStates.mailchimp.isAuthenticated
+                      ? 'Please connect Mailchimp first'
+                      : ''
+                  }
                 >
                   {publishing ? 'Đang đăng...' : `Đăng (${selectedPlatforms.size})`}
                 </Button>
@@ -526,6 +658,14 @@ export default function PacksPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+
+          {/* Auth Dialog */}
+          <AuthDialog
+            platform={selectedAuthPlatform}
+            isOpen={authDialogOpen}
+            onClose={() => setAuthDialogOpen(false)}
+            onConnect={handleAuthSuccess}
+          />
         </div>
       </div>
     </PageTransition>

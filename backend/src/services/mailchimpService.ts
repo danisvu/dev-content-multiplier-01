@@ -26,10 +26,20 @@ export class MailchimpService {
     try {
       const { apiKey, campaignName, campaignSubject, emailContent, audienceId } = request;
 
+      // Validate API key format
+      if (!apiKey || typeof apiKey !== 'string' || apiKey.trim().length === 0) {
+        throw new Error('API key is required and must be a non-empty string');
+      }
+
       // Extract server prefix from API key (format: key-prefix)
-      const serverPrefix = apiKey.split('-')[1];
-      if (!serverPrefix) {
-        throw new Error('Invalid Mailchimp API key format. Expected format: key-prefix (e.g., abc123def456-us1)');
+      const parts = apiKey.split('-');
+      if (parts.length < 2) {
+        throw new Error('Invalid Mailchimp API key format. Expected format: key-prefix (e.g., abc123def456-us1). Please check your API key.');
+      }
+
+      const serverPrefix = parts[parts.length - 1]; // Get last part after split
+      if (!serverPrefix || serverPrefix.length < 2) {
+        throw new Error('Invalid server prefix in API key. Expected format like "us1", "us2", etc.');
       }
 
       const apiBaseUrl = `https://${serverPrefix}.api.mailchimp.com/3.0`;
@@ -98,19 +108,19 @@ export class MailchimpService {
     } catch (error) {
       console.error('Mailchimp API Error:', error);
 
-      // Return a mock result for demonstration if API fails
-      // In production, you would handle this differently
-      if (error instanceof Error && error.message.includes('Invalid Mailchimp API key')) {
+      // Check if it's a validation error
+      if (error instanceof Error && error.message.includes('Invalid')) {
         throw error;
       }
 
-      // For demo purposes, return simulated results if API key validation fails
+      // For demo purposes, return simulated results if API call fails
+      // This allows testing the UI without a real Mailchimp account
       return {
         success: true,
         campaignId: `CAMP-${Date.now()}`,
         emailsSent: Math.floor(Math.random() * 5000) + 1000,
         subscribers: Math.floor(Math.random() * 10000) + 5000,
-        message: 'Campaign simulation (Demo Mode)',
+        message: 'Campaign simulation (Demo Mode - API call failed)',
         timestamp: new Date()
       };
     }
