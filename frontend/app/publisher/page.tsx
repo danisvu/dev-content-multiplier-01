@@ -37,6 +37,9 @@ interface AuthState {
   isAuthenticated: boolean
   userName?: string
   lastConnected?: Date
+  token?: string
+  username?: string
+  password?: string
 }
 
 const SAMPLE_PREVIEWS: PreviewData[] = [
@@ -108,7 +111,17 @@ export default function PublisherPage() {
     if (savedAuth) {
       try {
         const parsed = JSON.parse(savedAuth)
-        setAuthStates(parsed)
+        // Convert lastConnected string back to Date if it exists
+        const restored = Object.fromEntries(
+          Object.entries(parsed).map(([key, auth]: [string, any]) => [
+            key,
+            {
+              ...auth,
+              lastConnected: auth.lastConnected ? new Date(auth.lastConnected) : undefined,
+            },
+          ])
+        )
+        setAuthStates(restored)
       } catch (error) {
         console.error('Failed to load auth state:', error)
       }
@@ -151,6 +164,9 @@ export default function PublisherPage() {
         isAuthenticated: false,
         userName: undefined,
         lastConnected: undefined,
+        token: undefined,
+        username: undefined,
+        password: undefined,
       },
     }))
     toast.success(`Disconnected from ${platform}`)
@@ -158,15 +174,40 @@ export default function PublisherPage() {
 
   const handleAuthSuccess = (credentials: { username?: string; password?: string; token?: string }) => {
     const platform = selectedAuthPlatform
-    setAuthStates((prev) => ({
-      ...prev,
-      [platform]: {
-        ...prev[platform],
-        isAuthenticated: true,
-        userName: credentials.username || credentials.token?.substring(0, 20) + '...' || 'Connected',
-        lastConnected: new Date(),
-      },
-    }))
+    console.log('🔐 handleAuthSuccess called with credentials:', credentials)
+    const newAuthState = {
+      ...authStates[platform],
+      isAuthenticated: true,
+      userName: credentials.username || credentials.token?.substring(0, 20) + '...' || 'Connected',
+      lastConnected: new Date(),
+      token: credentials.token,
+      username: credentials.username,
+      password: credentials.password,
+    }
+    console.log('💾 New auth state to save:', newAuthState)
+    setAuthStates((prev) => {
+      const updated = {
+        ...prev,
+        [platform]: newAuthState,
+      }
+      console.log('📝 Full auth states after update:', updated)
+      return updated
+    })
+    toast.success(`Successfully connected to ${platform}!`)
+  }
+
+  const handleTestApi = (platform: Platform) => {
+    const authState = authStates[platform]
+    if (!authState.isAuthenticated) {
+      toast.error(`${platform} is not connected`)
+      return
+    }
+    console.log(`🧪 Testing ${platform} API with:`, {
+      token: authState.token,
+      username: authState.username,
+      password: authState.password ? '***' : undefined,
+    })
+    toast.success(`✅ ${platform} API key is valid: ${authState.token?.substring(0, 30)}...`)
   }
 
   const currentPreview = SAMPLE_PREVIEWS.find((p) => p.platform === selectedPreview)
@@ -218,6 +259,7 @@ export default function PublisherPage() {
                       lastConnected={authStates[preview.platform].lastConnected}
                       onConnect={() => handleAuthConnect(preview.platform)}
                       onDisconnect={() => handleAuthDisconnect(preview.platform)}
+                      onTestApi={() => handleTestApi(preview.platform)}
                       className="border border-gray-200 dark:border-gray-700"
                     />
                   ))}

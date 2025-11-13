@@ -13,6 +13,7 @@ export interface AuthStatusProps {
   lastConnected?: Date
   onConnect?: () => void
   onDisconnect?: () => void
+  onTestApi?: () => void
   className?: string
 }
 
@@ -23,6 +24,7 @@ export function AuthStatus({
   lastConnected,
   onConnect,
   onDisconnect,
+  onTestApi,
   className = '',
 }: AuthStatusProps) {
   const getPlatformColor = (platform: Platform) => {
@@ -78,6 +80,15 @@ export function AuthStatus({
         {isAuthenticated ? (
           <>
             <Badge className={getPlatformColor(platform)}>Connected</Badge>
+            {onTestApi && (
+              <button
+                onClick={onTestApi}
+                className="px-3 py-1 text-sm font-medium bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-300 dark:hover:bg-green-900/50 rounded transition-colors"
+                title="Test API connection"
+              >
+                🧪 Test
+              </button>
+            )}
             {onDisconnect && (
               <button
                 onClick={onDisconnect}

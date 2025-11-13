@@ -76,8 +76,8 @@ export function AuthDialog({ platform, isOpen, onClose, onConnect }: AuthDialogP
         token: authType === 'token' ? token : undefined,
       }
 
+      console.log('📤 AuthDialog sending credentials:', credentials)
       onConnect(credentials)
-      toast.success(`Successfully connected to ${platform}!`)
 
       // Reset form
       setUsername('')
@@ -96,9 +96,9 @@ export function AuthDialog({ platform, isOpen, onClose, onConnect }: AuthDialogP
     toast.info(`Redirecting to ${platform} OAuth... (Demo mode)`)
     setTimeout(() => {
       const mockToken = `${platform}_token_${Date.now()}`
+      console.log('📤 AuthDialog sending OAuth token:', { token: mockToken })
       onConnect({ token: mockToken })
       onClose()
-      toast.success(`Successfully connected to ${platform}!`)
     }, 1500)
   }
 
