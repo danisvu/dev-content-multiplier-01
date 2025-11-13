@@ -107,14 +107,26 @@ export class MailchimpService {
       };
     } catch (error) {
       console.error('Mailchimp API Error:', error);
+      
+      // Log detailed error information
+      if (axios.isAxiosError(error)) {
+        console.error('Axios Error Details:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+          message: error.message
+        });
+      }
 
       // Check if it's a validation error
       if (error instanceof Error && error.message.includes('Invalid')) {
+        console.error('Validation Error:', error.message);
         throw error;
       }
 
       // For demo purposes, return simulated results if API call fails
       // This allows testing the UI without a real Mailchimp account
+      console.log('⚠️ Falling back to demo mode due to API error');
       return {
         success: true,
         campaignId: `CAMP-${Date.now()}`,

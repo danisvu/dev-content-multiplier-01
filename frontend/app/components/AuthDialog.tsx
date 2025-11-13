@@ -66,8 +66,21 @@ export function AuthDialog({ platform, isOpen, onClose, onConnect }: AuthDialogP
           return
         }
         // Validate token is not empty
-        if (token.trim().length === 0) {
+        const trimmedToken = token.trim()
+        if (trimmedToken.length === 0) {
           toast.error(`API key cannot be empty`)
+          return
+        }
+        // Validate format for Mailchimp (should contain hyphen for server prefix)
+        if (platform === 'mailchimp' && !trimmedToken.includes('-')) {
+          toast.error(`Invalid Mailchimp API key format. Expected format: key-serverprefix (e.g., abc123def456-us1)`)
+          return
+        }
+        // Reject placeholder-like values
+        if (trimmedToken.toLowerCase().includes('refresh') ||
+            trimmedToken.toLowerCase().includes('should persist') ||
+            trimmedToken.toLowerCase().includes('enter your')) {
+          toast.error(`Please enter your actual ${platform} API key, not a placeholder`)
           return
         }
       }
@@ -78,12 +91,13 @@ export function AuthDialog({ platform, isOpen, onClose, onConnect }: AuthDialogP
       const credentials = {
         username: authType === 'credentials' ? username : undefined,
         password: authType === 'credentials' ? password : undefined,
-        token: authType === 'token' ? token : undefined,
+        token: authType === 'token' ? token.trim() : undefined,
       }
 
       console.log('🔑 AuthDialog - Raw token value:', token)
       console.log('🔑 AuthDialog - Token length:', token?.length)
       console.log('🔑 AuthDialog - Trimmed token:', token?.trim())
+      console.log('🔑 AuthDialog - Trimmed length:', token?.trim().length)
       console.log('📤 AuthDialog sending credentials:', credentials)
       onConnect(credentials)
 

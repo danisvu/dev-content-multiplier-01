@@ -312,10 +312,18 @@ export default function PacksPage() {
             })
           } catch (error) {
             console.error('Mailchimp API error:', error)
+            let errorMessage = 'Unknown error'
+            if (axios.isAxiosError(error)) {
+              // Extract detailed error from backend response
+              errorMessage = error.response?.data?.details || error.response?.data?.error || error.message
+              console.error('Backend response:', error.response?.data)
+            } else if (error instanceof Error) {
+              errorMessage = error.message
+            }
             results.push({
               platform,
               success: false,
-              message: `❌ Failed to send email campaign: ${error instanceof Error ? error.message : 'Unknown error'}`,
+              message: `❌ Failed to send email campaign: ${errorMessage}`,
               timestamp: new Date(),
             })
           }
@@ -583,7 +591,11 @@ export default function PacksPage() {
 
               <div className="space-y-3 py-4">
                 {publishResults.map((result, idx) => (
-                  <Card key={idx} className="border-0 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
+                  <Card key={idx} className={`border-0 bg-gradient-to-r ${
+                    result.success 
+                      ? 'from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20' 
+                      : 'from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20'
+                  }`}>
                     <CardContent className="pt-6">
                       <div className="space-y-3">
                         {/* Platform header */}
@@ -607,16 +619,26 @@ export default function PacksPage() {
                               </p>
                             </div>
                           </div>
-                          <Check className="w-5 h-5 text-green-600" />
+                          {result.success ? (
+                            <Check className="w-5 h-5 text-green-600" />
+                          ) : (
+                            <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          )}
                         </div>
 
                         {/* Message */}
-                        <p className="text-sm font-medium text-green-700 dark:text-green-300">
+                        <p className={`text-sm font-medium ${
+                          result.success 
+                            ? 'text-green-700 dark:text-green-300' 
+                            : 'text-red-700 dark:text-red-300'
+                        }`}>
                           {result.message}
                         </p>
 
                         {/* Mailchimp specific details */}
-                        {result.platform === 'mailchimp' && result.details && (
+                        {result.platform === 'mailchimp' && result.success && result.details && (
                           <div className="mt-4 pt-4 border-t border-green-200 dark:border-green-800 space-y-3">
                             <div className="bg-white dark:bg-gray-900 rounded p-3 space-y-2">
                               <div className="flex justify-between items-center">
