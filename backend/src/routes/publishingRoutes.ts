@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { DerivativeService } from '../services/derivativeService';
 import { EventLogService } from '../services/eventLogService';
+import { MailchimpService } from '../services/mailchimpService';
 
 interface PublishRequest {
   derivativeIds: number[];
@@ -201,6 +202,71 @@ async function publishingRoutes(fastify: FastifyInstance) {
       console.error('Error cleaning up event logs:', error);
       return reply.status(500).send({
         error: 'Failed to clean up event logs',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  // POST /api/publishing/mailchimp - Create and send Mailchimp campaign
+  fastify.post<{ Body: { apiKey: string; campaignName: string; campaignSubject: string; emailContent: string; audienceId?: string } }>('/publishing/mailchimp', async (
+    request: FastifyRequest<{ Body: { apiKey: string; campaignName: string; campaignSubject: string; emailContent: string; audienceId?: string } }>,
+    reply: FastifyReply
+  ) => {
+    try {
+      const { apiKey, campaignName, campaignSubject, emailContent, audienceId } = request.body;
+
+      // Validate required fields
+      if (!apiKey || !campaignName || !campaignSubject || !emailContent) {
+        return reply.status(400).send({
+          error: 'Missing required fields: apiKey, campaignName, campaignSubject, emailContent'
+        });
+      }
+
+      const mailchimpService = new MailchimpService();
+      const result = await mailchimpService.createAndSendCampaign({
+        apiKey,
+        campaignName,
+        campaignSubject,
+        emailContent,
+        audienceId
+      });
+
+      // Log the Mailchimp publishing event
+      await eventLogService.logEvent({
+        eventType: 'publishing.mailchimp',
+        entityType: 'campaign',
+        userId: request.headers['x-user-id']?.toString() || 'anonymous',
+        metadata: {
+          campaignId: result.campaignId,
+          campaignName: campaignName,
+          emailsSent: result.emailsSent,
+          subscribers: result.subscribers
+        },
+        status: result.success ? 'success' : 'failed'
+      });
+
+      return reply.status(200).send({
+        success: result.success,
+        message: result.message,
+        campaignId: result.campaignId,
+        emailsSent: result.emailsSent,
+        subscribers: result.subscribers,
+        timestamp: result.timestamp
+      });
+    } catch (error) {
+      console.error('Error creating Mailchimp campaign:', error);
+
+      await eventLogService.logEvent({
+        eventType: 'publishing.mailchimp',
+        entityType: 'campaign',
+        userId: request.headers['x-user-id']?.toString() || 'anonymous',
+        status: 'error',
+        errorMessage: error instanceof Error ? error.message : 'Unknown error'
+      });
+
+      return reply.status(500).send({
+        success: false,
+        error: 'Failed to create Mailchimp campaign',
         details: error instanceof Error ? error.message : 'Unknown error'
       });
     }

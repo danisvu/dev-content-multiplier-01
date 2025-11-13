@@ -131,35 +131,109 @@ export default function PacksPage() {
       const selectedBriefIds = Array.from(selectedBriefs)
       const platformsList = Array.from(selectedPlatforms)
 
-      // Simulate publishing with results
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      // Get selected briefs data
+      const selectedBriefsData = briefs.filter(b => selectedBriefIds.includes(b.id))
 
       // Generate results for each platform
-      const results: PublishResult[] = platformsList.map((platform) => {
+      const results: PublishResult[] = []
+
+      for (const platform of platformsList) {
         if (platform === 'mailchimp') {
-          return {
+          // Get Mailchimp API key from localStorage
+          const authState = localStorage.getItem('publisher_auth_state')
+          if (!authState) {
+            results.push({
+              platform,
+              success: false,
+              message: '❌ Mailchimp API key not found. Please connect to Mailchimp first.',
+              timestamp: new Date(),
+            })
+            continue
+          }
+
+          try {
+            const authStates = JSON.parse(authState)
+            const mailchimpAuth = authStates.mailchimp
+            if (!mailchimpAuth?.token) {
+              results.push({
+                platform,
+                success: false,
+                message: '❌ Mailchimp API key not found. Please connect to Mailchimp first.',
+                timestamp: new Date(),
+              })
+              continue
+            }
+
+            // Prepare email content from briefs
+            const emailContent = `
+              <html>
+                <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                  <h1>Content Package</h1>
+                  <hr />
+                  ${selectedBriefsData
+                    .map(
+                      (brief) => `
+                    <div style="margin-bottom: 30px;">
+                      <h2>${brief.title}</h2>
+                      <p><strong>Target Audience:</strong> ${brief.target_audience}</p>
+                      <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px;">
+                        <h3>Content Plan</h3>
+                        <p>${brief.content_plan}</p>
+                      </div>
+                      ${brief.key_points?.length ? `<p><strong>Key Points:</strong> ${brief.key_points.join(', ')}</p>` : ''}
+                      ${brief.tone ? `<p><strong>Tone:</strong> ${brief.tone}</p>` : ''}
+                    </div>
+                  `
+                    )
+                    .join('<hr />')}
+                </body>
+              </html>
+            `
+
+            // Call backend Mailchimp API endpoint
+            const response = await axios.post(`${API_BASE_URL}/publishing/mailchimp`, {
+              apiKey: mailchimpAuth.token,
+              campaignName: `Content Batch - ${new Date().toLocaleDateString()}`,
+              campaignSubject: `New Content - ${selectedBriefsData.map(b => b.title).join(', ')}`,
+              emailContent: emailContent,
+            })
+
+            results.push({
+              platform,
+              success: response.data.success,
+              message: response.data.message || '✅ Email campaign sent successfully',
+              timestamp: new Date(),
+              details: {
+                campaignId: response.data.campaignId,
+                emailsSent: response.data.emailsSent,
+                subscribers: response.data.subscribers,
+              },
+            })
+          } catch (error) {
+            console.error('Mailchimp API error:', error)
+            results.push({
+              platform,
+              success: false,
+              message: `❌ Failed to send email campaign: ${error instanceof Error ? error.message : 'Unknown error'}`,
+              timestamp: new Date(),
+            })
+          }
+        } else {
+          // Simulate other platforms
+          await new Promise(resolve => setTimeout(resolve, 500))
+          results.push({
             platform,
             success: true,
-            message: '✅ Email campaign sent successfully',
+            message: `✅ Posted successfully on ${platform}`,
             timestamp: new Date(),
-            details: {
-              campaignId: `CAMP-${Date.now()}`,
-              emailsSent: Math.floor(Math.random() * 5000) + 1000,
-              subscribers: Math.floor(Math.random() * 10000) + 5000,
-            },
-          }
+          })
         }
-        return {
-          platform,
-          success: true,
-          message: `✅ Posted successfully on ${platform}`,
-          timestamp: new Date(),
-        }
-      })
+      }
 
       setPublishResults(results)
       setShowResults(true)
-      toast.success(`Đã đăng thành công ${selectedBriefIds.length} brief(s)`)
+      const successCount = results.filter(r => r.success).length
+      toast.success(`Đã đăng thành công ${successCount}/${platformsList.length} nền tảng`)
 
       // Clear selections
       setSelectedBriefs(new Set())
