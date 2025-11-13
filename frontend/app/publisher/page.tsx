@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { SidebarLayout } from '../components/Sidebar'
 import {
   Card,
@@ -18,8 +18,10 @@ import { ComparePreviews } from '../components/ComparePreviews'
 import { ResponsivePreview } from '../components/ResponsivePreview'
 import { ExportOptions } from '../components/ExportOptions'
 import { AnalyticsDashboard } from '../components/AnalyticsDashboard'
+import { AuthStatus } from '../components/AuthStatus'
+import { AuthDialog } from '../components/AuthDialog'
 import { motion } from 'framer-motion'
-import { Zap, Settings, Eye, BarChart3, FileUp, Layers } from 'lucide-react'
+import { Zap, Settings, Eye, BarChart3, FileUp, Layers, Key } from 'lucide-react'
 import { toast } from 'sonner'
 
 type Platform = 'twitter' | 'linkedin' | 'facebook' | 'instagram' | 'tiktok' | 'mailchimp' | 'wordpress'
@@ -28,6 +30,13 @@ interface PreviewData {
   platform: Platform
   content: string
   characterCount: number
+}
+
+interface AuthState {
+  platform: Platform
+  isAuthenticated: boolean
+  userName?: string
+  lastConnected?: Date
 }
 
 const SAMPLE_PREVIEWS: PreviewData[] = [
@@ -81,6 +90,35 @@ export default function PublisherPage() {
   const [responsiveMode, setResponsiveMode] = useState<'mobile' | 'desktop'>('desktop')
   const [selectedPreview, setSelectedPreview] = useState<Platform>('twitter')
   const [activeTab, setActiveTab] = useState('selector')
+  const [authStates, setAuthStates] = useState<Record<Platform, AuthState>>({
+    twitter: { platform: 'twitter', isAuthenticated: false },
+    linkedin: { platform: 'linkedin', isAuthenticated: false },
+    facebook: { platform: 'facebook', isAuthenticated: false },
+    instagram: { platform: 'instagram', isAuthenticated: false },
+    tiktok: { platform: 'tiktok', isAuthenticated: false },
+    mailchimp: { platform: 'mailchimp', isAuthenticated: false },
+    wordpress: { platform: 'wordpress', isAuthenticated: false },
+  })
+  const [authDialogOpen, setAuthDialogOpen] = useState(false)
+  const [selectedAuthPlatform, setSelectedAuthPlatform] = useState<Platform>('twitter')
+
+  // Load auth state from localStorage on mount
+  useEffect(() => {
+    const savedAuth = localStorage.getItem('publisher_auth_state')
+    if (savedAuth) {
+      try {
+        const parsed = JSON.parse(savedAuth)
+        setAuthStates(parsed)
+      } catch (error) {
+        console.error('Failed to load auth state:', error)
+      }
+    }
+  }, [])
+
+  // Save auth state to localStorage
+  useEffect(() => {
+    localStorage.setItem('publisher_auth_state', JSON.stringify(authStates))
+  }, [authStates])
 
   const filteredPreviews = SAMPLE_PREVIEWS.filter((p) => selectedPlatforms.includes(p.platform))
 
@@ -98,6 +136,37 @@ export default function PublisherPage() {
         setSelectedPreview(remaining[0])
       }
     }
+  }
+
+  const handleAuthConnect = (platform: Platform) => {
+    setSelectedAuthPlatform(platform)
+    setAuthDialogOpen(true)
+  }
+
+  const handleAuthDisconnect = (platform: Platform) => {
+    setAuthStates((prev) => ({
+      ...prev,
+      [platform]: {
+        ...prev[platform],
+        isAuthenticated: false,
+        userName: undefined,
+        lastConnected: undefined,
+      },
+    }))
+    toast.success(`Disconnected from ${platform}`)
+  }
+
+  const handleAuthSuccess = (credentials: { username?: string; password?: string; token?: string }) => {
+    const platform = selectedAuthPlatform
+    setAuthStates((prev) => ({
+      ...prev,
+      [platform]: {
+        ...prev[platform],
+        isAuthenticated: true,
+        userName: credentials.username || credentials.token?.substring(0, 20) + '...' || 'Connected',
+        lastConnected: new Date(),
+      },
+    }))
   }
 
   const currentPreview = SAMPLE_PREVIEWS.find((p) => p.platform === selectedPreview)
@@ -121,6 +190,40 @@ export default function PublisherPage() {
                 </p>
               </div>
             </div>
+          </motion.div>
+
+          {/* Authentication Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="space-y-3"
+          >
+            <Card className="border-0 shadow-lg bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Key className="w-5 h-5" />
+                  Platform Connections
+                </CardTitle>
+                <CardDescription>Connect your accounts to enable publishing</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {SAMPLE_PREVIEWS.map((preview) => (
+                    <AuthStatus
+                      key={preview.platform}
+                      platform={preview.platform}
+                      isAuthenticated={authStates[preview.platform].isAuthenticated}
+                      userName={authStates[preview.platform].userName}
+                      lastConnected={authStates[preview.platform].lastConnected}
+                      onConnect={() => handleAuthConnect(preview.platform)}
+                      onDisconnect={() => handleAuthDisconnect(preview.platform)}
+                      className="border border-gray-200 dark:border-gray-700"
+                    />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
 
           {/* Main Content */}
@@ -407,6 +510,14 @@ export default function PublisherPage() {
           </motion.div>
         </div>
       </div>
+
+      {/* Auth Dialog */}
+      <AuthDialog
+        platform={selectedAuthPlatform}
+        isOpen={authDialogOpen}
+        onClose={() => setAuthDialogOpen(false)}
+        onConnect={handleAuthSuccess}
+      />
     </SidebarLayout>
   )
 }
