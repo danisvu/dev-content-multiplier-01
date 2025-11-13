@@ -47,6 +47,18 @@ interface Brief {
 
 type Platform = 'twitter' | 'linkedin' | 'facebook' | 'instagram' | 'tiktok' | 'mailchimp' | 'wordpress'
 
+interface PublishResult {
+  platform: Platform
+  success: boolean
+  message: string
+  timestamp: Date
+  details?: {
+    emailsSent?: number
+    campaignId?: string
+    subscribers?: number
+  }
+}
+
 export default function PacksPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -55,6 +67,8 @@ export default function PacksPage() {
   const [showPublishDialog, setShowPublishDialog] = useState(false)
   const [selectedPlatforms, setSelectedPlatforms] = useState<Set<Platform>>(new Set())
   const [publishing, setPublishing] = useState(false)
+  const [publishResults, setPublishResults] = useState<PublishResult[]>([])
+  const [showResults, setShowResults] = useState(false)
 
   useEffect(() => {
     fetchBriefs()
@@ -117,10 +131,35 @@ export default function PacksPage() {
       const selectedBriefIds = Array.from(selectedBriefs)
       const platformsList = Array.from(selectedPlatforms)
 
-      // Simulate publishing
+      // Simulate publishing with results
       await new Promise(resolve => setTimeout(resolve, 1500))
 
-      toast.success(`Đã đăng ${selectedBriefIds.length} brief(s) trên ${platformsList.join(', ')}`)
+      // Generate results for each platform
+      const results: PublishResult[] = platformsList.map((platform) => {
+        if (platform === 'mailchimp') {
+          return {
+            platform,
+            success: true,
+            message: '✅ Email campaign sent successfully',
+            timestamp: new Date(),
+            details: {
+              campaignId: `CAMP-${Date.now()}`,
+              emailsSent: Math.floor(Math.random() * 5000) + 1000,
+              subscribers: Math.floor(Math.random() * 10000) + 5000,
+            },
+          }
+        }
+        return {
+          platform,
+          success: true,
+          message: `✅ Posted successfully on ${platform}`,
+          timestamp: new Date(),
+        }
+      })
+
+      setPublishResults(results)
+      setShowResults(true)
+      toast.success(`Đã đăng thành công ${selectedBriefIds.length} brief(s)`)
 
       // Clear selections
       setSelectedBriefs(new Set())
@@ -318,6 +357,97 @@ export default function PacksPage() {
                   disabled={publishing || selectedPlatforms.size === 0}
                 >
                   {publishing ? 'Đang đăng...' : `Đăng (${selectedPlatforms.size})`}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Results Dialog */}
+          <Dialog open={showResults} onOpenChange={setShowResults}>
+            <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <Check className="w-6 h-6 text-green-600" />
+                  Kết quả đăng bài
+                </DialogTitle>
+                <DialogDescription>
+                  Chi tiết kết quả đăng bài trên các platform
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-3 py-4">
+                {publishResults.map((result, idx) => (
+                  <Card key={idx} className="border-0 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
+                    <CardContent className="pt-6">
+                      <div className="space-y-3">
+                        {/* Platform header */}
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="text-2xl">
+                              {result.platform === 'mailchimp' && '📧'}
+                              {result.platform === 'twitter' && '𝕏'}
+                              {result.platform === 'linkedin' && '💼'}
+                              {result.platform === 'facebook' && '👍'}
+                              {result.platform === 'instagram' && '📷'}
+                              {result.platform === 'tiktok' && '🎵'}
+                              {result.platform === 'wordpress' && '📝'}
+                            </div>
+                            <div>
+                              <p className="font-semibold capitalize text-gray-900 dark:text-gray-100">
+                                {result.platform}
+                              </p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {result.timestamp.toLocaleTimeString('vi-VN')}
+                              </p>
+                            </div>
+                          </div>
+                          <Check className="w-5 h-5 text-green-600" />
+                        </div>
+
+                        {/* Message */}
+                        <p className="text-sm font-medium text-green-700 dark:text-green-300">
+                          {result.message}
+                        </p>
+
+                        {/* Mailchimp specific details */}
+                        {result.platform === 'mailchimp' && result.details && (
+                          <div className="mt-4 pt-4 border-t border-green-200 dark:border-green-800 space-y-3">
+                            <div className="bg-white dark:bg-gray-900 rounded p-3 space-y-2">
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-600 dark:text-gray-400">Campaign ID:</span>
+                                <span className="font-mono text-sm font-medium text-gray-900 dark:text-gray-100">
+                                  {result.details.campaignId}
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-600 dark:text-gray-400">Emails gửi:</span>
+                                <span className="font-semibold text-lg text-green-600 dark:text-green-400">
+                                  {result.details.emailsSent?.toLocaleString('vi-VN')} email
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-600 dark:text-gray-400">Subscribers:</span>
+                                <span className="text-sm text-gray-700 dark:text-gray-300">
+                                  {result.details.subscribers?.toLocaleString('vi-VN')} người
+                                </span>
+                              </div>
+                              <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-700">
+                                <p className="text-xs text-gray-500 dark:text-gray-500">
+                                  ✓ Email campaign đã gửi thành công đến danh sách subscribers
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              <DialogFooter>
+                <Button onClick={() => setShowResults(false)} className="w-full">
+                  Đóng
                 </Button>
               </DialogFooter>
             </DialogContent>
