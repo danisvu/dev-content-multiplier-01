@@ -102,36 +102,47 @@ export default function PublisherPage() {
     mailchimp: { platform: 'mailchimp', isAuthenticated: false },
     wordpress: { platform: 'wordpress', isAuthenticated: false },
   })
+  const [isLoaded, setIsLoaded] = useState(false)
   const [authDialogOpen, setAuthDialogOpen] = useState(false)
   const [selectedAuthPlatform, setSelectedAuthPlatform] = useState<Platform>('twitter')
 
   // Load auth state from localStorage on mount
   useEffect(() => {
     const savedAuth = localStorage.getItem('publisher_auth_state')
+    console.log('📂 Loading from localStorage:', savedAuth)
     if (savedAuth) {
       try {
         const parsed = JSON.parse(savedAuth)
+        console.log('✅ Parsed auth state:', parsed)
         // Convert lastConnected string back to Date if it exists
         const restored = Object.fromEntries(
-          Object.entries(parsed).map(([key, auth]: [string, any]) => [
-            key,
-            {
+          Object.entries(parsed).map(([key, auth]: [string, any]) => {
+            const restoredAuth = {
               ...auth,
               lastConnected: auth.lastConnected ? new Date(auth.lastConnected) : undefined,
-            },
-          ])
+            }
+            console.log(`🔄 Restoring ${key}:`, restoredAuth)
+            return [key, restoredAuth]
+          })
         )
+        console.log('🎯 Final restored state:', restored)
         setAuthStates(restored)
       } catch (error) {
         console.error('Failed to load auth state:', error)
       }
+    } else {
+      console.log('ℹ️ No saved auth state found in localStorage')
     }
+    setIsLoaded(true)
   }, [])
 
-  // Save auth state to localStorage
+  // Save auth state to localStorage (only after initial load)
   useEffect(() => {
-    localStorage.setItem('publisher_auth_state', JSON.stringify(authStates))
-  }, [authStates])
+    if (isLoaded) {
+      console.log('💾 Saving auth state to localStorage:', authStates)
+      localStorage.setItem('publisher_auth_state', JSON.stringify(authStates))
+    }
+  }, [authStates, isLoaded])
 
   const filteredPreviews = SAMPLE_PREVIEWS.filter((p) => selectedPlatforms.includes(p.platform))
 
