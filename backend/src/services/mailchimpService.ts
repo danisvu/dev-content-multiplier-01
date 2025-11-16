@@ -53,9 +53,10 @@ export class MailchimpService {
   }
 
   /**
-   * Get verified sender addresses from Mailchimp
+   * Get sender email - tries verified domains first, then falls back to audience default
    */
-  private async getVerifiedSenderEmail(apiKey: string, apiBaseUrl: string): Promise<string | null> {
+  private async getSenderEmail(apiKey: string, apiBaseUrl: string, audienceId: string): Promise<string | null> {
+    // First, try to get verified domains
     try {
       console.log('📧 Fetching verified sender addresses...');
       const sendersResponse = await axios.get(
@@ -74,12 +75,41 @@ export class MailchimpService {
         console.log(`📧 Using verified domain email: ${defaultEmail}`);
         return defaultEmail;
       }
-
-      return null;
     } catch (error) {
-      console.log('⚠️ Could not fetch verified domains, will skip reply_to field');
-      return null;
+      console.log('⚠️ Could not fetch verified domains');
     }
+
+    // Fall back to audience's default from_email
+    try {
+      console.log('📧 Fetching audience default from email...');
+      const audienceResponse = await axios.get(
+        `${apiBaseUrl}/lists/${audienceId}`,
+        {
+          auth: {
+            username: 'anystring',
+            password: apiKey
+          }
+        }
+      );
+
+      console.log('📧 Audience data keys:', Object.keys(audienceResponse.data));
+      console.log('📧 Campaign defaults:', audienceResponse.data.campaign_defaults);
+
+      // Try different possible field names
+      const defaultEmail =
+        audienceResponse.data.default_from_email ||
+        audienceResponse.data.campaign_defaults?.from_email ||
+        audienceResponse.data.campaign_defaults?.default_from_email;
+
+      if (defaultEmail) {
+        console.log(`📧 Using audience default from email: ${defaultEmail}`);
+        return defaultEmail;
+      }
+    } catch (error) {
+      console.log('⚠️ Could not fetch audience default from email');
+    }
+
+    return null;
   }
 
   /**
@@ -116,18 +146,21 @@ export class MailchimpService {
 
       console.log(`🎯 Creating campaign for audience: ${finalAudienceId}`);
 
-      // Get verified sender email for reply_to field
-      const verifiedEmail = await this.getVerifiedSenderEmail(apiKey, apiBaseUrl);
+      // Get sender email (from verified domain or audience default)
+      const senderEmail = await this.getSenderEmail(apiKey, apiBaseUrl, finalAudienceId);
+
+      // Mailchimp requires from_email
+      if (!senderEmail) {
+        throw new Error('No sender email found. Please set a default from email in your Mailchimp audience settings.');
+      }
+
       const settings: any = {
         subject_line: campaignSubject,
         title: campaignName,
-        from_name: 'Content Publisher'
+        from_name: 'Content Publisher',
+        from_email: senderEmail,
+        reply_to: senderEmail
       };
-
-      // Only add reply_to if we have a verified email
-      if (verifiedEmail) {
-        settings.reply_to = verifiedEmail;
-      }
 
       // Create campaign
       const campaignResponse = await axios.post(
@@ -152,6 +185,22 @@ export class MailchimpService {
 
       const campaignId = campaignResponse.data.id;
       console.log(`✅ Campaign created with ID: ${campaignId}`);
+
+      // Set campaign content (separate request)
+      console.log(`📝 Setting campaign content...`);
+      await axios.put(
+        `${apiBaseUrl}/campaigns/${campaignId}/content`,
+        {
+          html: emailContent
+        },
+        {
+          auth: {
+            username: 'anystring',
+            password: apiKey
+          }
+        }
+      );
+      console.log(`📝 Campaign content set`);
 
       // Get audience stats to determine email count
       const audienceResponse = await axios.get(
