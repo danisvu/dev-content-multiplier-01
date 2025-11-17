@@ -1,11 +1,12 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { SharingService } from '../services/sharingService';
+import database from '../database';
 
 export async function sharingRoutes(
   server: FastifyInstance,
   options: any
 ) {
-  const sharingService = new SharingService(server.pg);
+  const sharingService = new SharingService(database);
 
   /**
    * Create a new shareable preview link
@@ -24,7 +25,7 @@ export async function sharingRoutes(
           allowComments,
           allowDownloads,
           createdBy,
-        } = request.body;
+        } = request.body as any;
 
         if (!briefId) {
           return reply.code(400).send({
@@ -80,7 +81,7 @@ export async function sharingRoutes(
         });
 
         // Get brief data
-        const briefResult = await server.pg.query(
+        const briefResult = await database.query(
           `SELECT id, title, content, status, created_at FROM briefs WHERE id = $1`,
           [shareLink.brief_id]
         );
@@ -99,7 +100,7 @@ export async function sharingRoutes(
           shareLink.preview_type === 'full' ||
           shareLink.preview_type === 'derivatives_only'
         ) {
-          const derivResult = await server.pg.query(
+          const derivResult = await database.query(
             `SELECT * FROM derivatives WHERE brief_id = $1 ORDER BY platform`,
             [shareLink.brief_id]
           );
@@ -107,10 +108,10 @@ export async function sharingRoutes(
         }
 
         // Get version history if requested
-        let versionHistory = {};
+        let versionHistory: Record<number, any> = {};
         if (shareLink.preview_type === 'full' || shareLink.preview_type === 'version_history') {
           for (const deriv of derivatives) {
-            const versionResult = await server.pg.query(
+            const versionResult = await database.query(
               `SELECT * FROM derivative_versions WHERE derivative_id = $1 ORDER BY version_number`,
               [deriv.id]
             );
@@ -230,7 +231,7 @@ export async function sharingRoutes(
       try {
         const { shareLinkId } = request.params as { shareLinkId: string };
         const { expiresIn, maxViews, allowComments, allowDownloads } =
-          request.body;
+          request.body as any;
 
         const updated = await sharingService.updateShareLink(
           parseInt(shareLinkId),

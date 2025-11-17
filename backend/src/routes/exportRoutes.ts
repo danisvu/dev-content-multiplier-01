@@ -1,11 +1,12 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { ExportService } from '../services/exportService';
+import database from '../database';
 
 export async function exportRoutes(
   server: FastifyInstance,
   options: any
 ) {
-  const exportService = new ExportService(server.pg);
+  const exportService = new ExportService(database);
 
   /**
    * Export derivatives as CSV

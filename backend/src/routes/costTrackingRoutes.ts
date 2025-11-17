@@ -1,11 +1,12 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { CostTrackingService } from '../services/costTrackingService';
+import database from '../database';
 
 export async function costTrackingRoutes(
   server: FastifyInstance,
   options: any
 ) {
-  const costTrackingService = new CostTrackingService(server.pg);
+  const costTrackingService = new CostTrackingService(database);
 
   /**
    * Record a cost transaction
@@ -24,7 +25,7 @@ export async function costTrackingRoutes(
           inputTokens,
           outputTokens,
           requestMetadata,
-        } = request.body;
+        } = request.body as any;
 
         if (!derivativeId || !costType || costAmount === undefined) {
           return reply.code(400).send({

@@ -1,11 +1,12 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { AnalyticsService } from '../services/analyticsService';
+import database from '../database';
 
 export async function analyticsRoutes(
   server: FastifyInstance,
   options: any
 ) {
-  const analyticsService = new AnalyticsService(server.pg);
+  const analyticsService = new AnalyticsService(database);
 
   /**
    * Get funnel analytics (ideas → briefs → derivatives → published)

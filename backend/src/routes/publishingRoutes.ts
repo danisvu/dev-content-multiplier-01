@@ -27,7 +27,9 @@ async function publishingRoutes(fastify: FastifyInstance) {
       }
 
       // Get user info from headers if not provided
-      const finalUserId = userId || request.headers['x-user-id'] || 'anonymous';
+      const headerUserId = request.headers['x-user-id'];
+      const userIdFromHeader = Array.isArray(headerUserId) ? headerUserId[0] : headerUserId;
+      const finalUserId = userId || userIdFromHeader || 'anonymous';
 
       const { published, failed } = await derivativeService.publishDerivatives(derivativeIds, finalUserId);
 
@@ -43,7 +45,7 @@ async function publishingRoutes(fastify: FastifyInstance) {
           failedIds: failed,
           publishedIds: published.map(d => d.id)
         },
-        status: failed.length === 0 ? 'success' : 'partial'
+        status: failed.length === 0 ? 'success' : 'failed'
       });
 
       return reply.status(200).send({
@@ -272,7 +274,7 @@ async function publishingRoutes(fastify: FastifyInstance) {
           eventType: 'publishing.mailchimp',
           entityType: 'campaign',
           userId: request.headers['x-user-id']?.toString() || 'anonymous',
-          status: 'error',
+          status: 'failed',
           errorMessage: error instanceof Error ? error.message : 'Unknown error'
         });
       } catch (logError) {
