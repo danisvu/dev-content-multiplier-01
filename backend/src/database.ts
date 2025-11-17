@@ -9,27 +9,49 @@ const databaseUrl = process.env.DATABASE_URL ||
                     process.env.POSTGRES_URL_NON_POOLING ||
                     process.env.POSTGRES_URL;
 
-if (!databaseUrl) {
-  console.warn('⚠️  DATABASE_URL not configured. Database features will not work.');
+let pool: Pool | null = null;
+
+function getPool(): Pool {
+  if (!pool) {
+    if (!databaseUrl) {
+      throw new Error('DATABASE_URL is not configured. Cannot connect to database.');
+    }
+    pool = new Pool({
+      connectionString: databaseUrl,
+      max: process.env.NODE_ENV === 'production' ? 5 : 20,
+    });
+  }
+  return pool;
 }
 
-const pool = new Pool({
-  connectionString: databaseUrl,
-  max: process.env.NODE_ENV === 'production' ? 5 : 20,
-});
-
 export async function query(text: string, params?: any[]): Promise<any> {
-  const client: PoolClient = await pool.connect();
   try {
-    const result = await client.query(text, params);
-    return result;
-  } finally {
-    client.release();
+    const currentPool = getPool();
+    const client: PoolClient = await currentPool.connect();
+    try {
+      const result = await client.query(text, params);
+      return result;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Database query error:', error);
+    throw error;
   }
 }
 
 export async function getClient(): Promise<PoolClient> {
-  return await pool.connect();
+  try {
+    const currentPool = getPool();
+    return await currentPool.connect();
+  } catch (error) {
+    console.error('Database connection error:', error);
+    throw error;
+  }
 }
 
-export default pool;
+export default {
+  query,
+  getClient,
+  getPool,
+};
