@@ -1,7 +1,4 @@
-const server = require('../dist/server').default;
+import server from '../src/server';
 
-module.exports = async (req: any, res: any) => {
-  await server.ready();
-  server.server.emit('request', req, res);
-};
+export default server;
 
