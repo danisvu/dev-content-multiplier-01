@@ -243,14 +243,14 @@ export class SharingService {
       // Calculate stats
       const uniqueIps = new Set(
         accessLogs
-          .map((log) => log.ip_address)
-          .filter((ip) => ip !== null)
+          .map((log: any) => log.ip_address)
+          .filter((ip: any) => ip !== null)
       ).size;
 
       const countries: Record<string, number> = {};
       const cities: Record<string, number> = {};
 
-      accessLogs.forEach((log) => {
+      accessLogs.forEach((log: any) => {
         if (log.country) {
           countries[log.country] = (countries[log.country] || 0) + 1;
         }

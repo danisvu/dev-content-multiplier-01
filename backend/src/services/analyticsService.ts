@@ -115,7 +115,7 @@ export class AnalyticsService {
       );
 
       const platformBreakdown: Record<string, number> = {};
-      platformResult.rows.forEach((row) => {
+      platformResult.rows.forEach((row: any) => {
         platformBreakdown[row.platform] = parseInt(row.count);
       });
 
@@ -192,7 +192,7 @@ export class AnalyticsService {
         tiktok: 9.0, // Algorithm-favored, high viral potential
       };
 
-      return result.rows.map((row) => ({
+      return result.rows.map((row: any) => ({
         platform: row.platform,
         total_derivatives: parseInt(row.total_derivatives),
         draft: parseInt(row.draft || 0),
@@ -245,7 +245,7 @@ export class AnalyticsService {
       );
 
       const byStatus: Record<string, number> = {};
-      statusResult.rows.forEach((row) => {
+      statusResult.rows.forEach((row: any) => {
         byStatus[row.status] = parseInt(row.count);
       });
 
@@ -258,7 +258,7 @@ export class AnalyticsService {
       );
 
       const byPlatform: Record<string, number> = {};
-      platformResult.rows.forEach((row) => {
+      platformResult.rows.forEach((row: any) => {
         byPlatform[row.platform] = parseInt(row.count);
       });
 
@@ -286,7 +286,7 @@ export class AnalyticsService {
       );
 
       const characterCountByPlatform: Record<string, number> = {};
-      charByPlatformResult.rows.forEach((row) => {
+      charByPlatformResult.rows.forEach((row: any) => {
         characterCountByPlatform[row.platform] = parseInt(row.average_count);
       });
 
@@ -302,7 +302,7 @@ export class AnalyticsService {
         params
       );
 
-      const creationTrend: TimeSeriesData[] = trendResult.rows.map((row) => ({
+      const creationTrend: TimeSeriesData[] = trendResult.rows.map((row: any) => ({
         date: row.date,
         count: parseInt(row.count),
       }));
@@ -372,7 +372,7 @@ export class AnalyticsService {
 
       const result = await this.db.query(query, params);
 
-      return result.rows.map((row) => ({
+      return result.rows.map((row: any) => ({
         date: row.date,
         count: parseInt(row.count),
         published_count: parseInt(row.published_count || 0),

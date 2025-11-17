@@ -36,6 +36,16 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# TypeScript and Linting Reports
+type-errors.log
+lint-errors.log
+type-check-report.log
+lint-report.log
+frontend/type-errors.log
+frontend/lint-errors.log
+backend/type-errors.log
+backend/lint-errors.log
+
 # OS
 .DS_Store
 Thumbs.db

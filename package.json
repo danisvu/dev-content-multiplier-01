@@ -1,0 +1,46 @@
+{
+  "name": "content-multiplier",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Content Ideas Manager with AI-powered generation and multi-platform publishing",
+  "scripts": {
+    "type-check": "npm run type-check --prefix frontend && npm run type-check --prefix backend",
+    "type-check:report": "npm run type-check:file --prefix frontend && npm run type-check:file --prefix backend && echo '====== TypeScript Type Check Report ======' && (cat frontend/type-errors.log 2>/dev/null || echo 'Frontend: No type errors') && (cat backend/type-errors.log 2>/dev/null || echo 'Backend: No type errors')",
+    "lint": "npm run lint --prefix frontend && npm run lint --prefix backend",
+    "lint:report": "npm run lint:file --prefix frontend && npm run lint:file --prefix backend && echo '====== Linting Report ======' && (cat frontend/lint-errors.log 2>/dev/null || echo 'Frontend: No lint errors') && (cat backend/lint-errors.log 2>/dev/null || echo 'Backend: No lint errors')",
+    "build": "npm run build --prefix frontend && npm run build --prefix backend",
+    "build:strict": "npm run build:strict --prefix frontend && npm run build:strict --prefix backend",
+    "validate": "npm run type-check && npm run lint && npm run build",
+    "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\"",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:backend": "npm run dev --prefix backend",
+    "prepare": "husky install"
+  },
+  "keywords": [
+    "content",
+    "ideas",
+    "ai",
+    "generation",
+    "publishing",
+    "multi-platform"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.0.0"
+  },
+  "lint-staged": {
+    "frontend/**/*.{ts,tsx,js,jsx}": [
+      "cd frontend && npm run lint -- --fix"
+    ],
+    "frontend/**/*.ts": [
+      "cd frontend && npm run type-check"
+    ],
+    "backend/**/*.ts": [
+      "cd backend && npm run type-check",
+      "cd backend && npm run lint -- --fix"
+    ]
+  }
+}

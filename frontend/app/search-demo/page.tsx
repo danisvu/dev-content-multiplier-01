@@ -229,7 +229,7 @@ export default function SearchDemoPage() {
                 <li>• <strong>Synonym Mapping:</strong> "AI" ↔ "trí tuệ nhân tạo", "marketing" ↔ "quảng cáo"</li>
                 <li>• <strong>Keyword Matching:</strong> Check document keywords</li>
                 <li>• <strong>Content Scanning:</strong> Find matching sentences</li>
-                <li>• <strong>Score Calculation:</strong> Weight by relevance (title > keywords > content)</li>
+                <li>• <strong>Score Calculation:</strong> Weight by relevance (title {'>'}  keywords {'>'}  content)</li>
                 <li>• <strong>Sort & Display:</strong> Highest score first</li>
               </ul>
             </div>

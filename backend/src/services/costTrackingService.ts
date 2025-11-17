@@ -147,7 +147,7 @@ export class CostTrackingService {
         [briefId]
       );
 
-      return result.rows.map((row) => ({
+      return result.rows.map((row: any) => ({
         derivative_id: row.id,
         platform: row.platform,
         total_cost: parseFloat(row.total_cost || 0),
@@ -250,7 +250,7 @@ export class CostTrackingService {
       let avgCost = 0;
       let count = 0;
 
-      result.rows.forEach((row) => {
+      result.rows.forEach((row: any) => {
         const cost = parseFloat(row.total_cost || 0);
         totalCost += cost;
 

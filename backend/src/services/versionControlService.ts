@@ -294,7 +294,7 @@ export class VersionControlService {
     );
 
     return {
-      totalVersions: result.rows.reduce((sum, row) => sum + parseInt(row.total_versions || 0), 0),
+      totalVersions: result.rows.reduce((sum: any, row: any) => sum + parseInt(row.total_versions || 0), 0),
       byChangeType: result.rows
     };
   }

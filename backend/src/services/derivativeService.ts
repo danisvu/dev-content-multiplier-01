@@ -141,10 +141,10 @@ Return ONLY a valid JSON object with platform keys and content values. Example:
 Important: Return ONLY the JSON object, no explanation or markdown formatting.`;
 
     try {
-      const response = await this.llmClient.generateContent(prompt, model, temperature);
+      const response = await this.llmClient.generateCompletion(prompt, model, temperature);
 
       // Extract JSON from response
-      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      const jsonMatch = response.content.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
         throw new Error('No JSON found in response');
       }
@@ -157,7 +157,7 @@ Important: Return ONLY the JSON object, no explanation or markdown formatting.`;
 
       const derivatives: Derivative[] = [];
 
-      for (const [platform, content] of Object.entries(parsed)) {
+      for (const [platform, content] of Object.entries(parsed as Record<string, any>)) {
         if (platforms.includes(platform)) {
           const derivative = await this.createDerivative({
             briefId,

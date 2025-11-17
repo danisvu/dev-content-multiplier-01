@@ -57,7 +57,7 @@ export class ExportService {
         'Published',
       ];
 
-      const rows = result.rows.map((row) => [
+      const rows = result.rows.map((row: any) => [
         row.id,
         row.brief_id,
         row.platform,
@@ -105,7 +105,7 @@ export class ExportService {
         `X-WR-TIMEZONE:UTC`,
       ];
 
-      result.rows.forEach((row) => {
+      result.rows.forEach((row: any) => {
         const eventDate = new Date(row.published_at);
         const formattedDate = this.formatICSDate(eventDate);
         const eventId = `derivative-${row.id}@content-multiplier`;
@@ -200,7 +200,7 @@ export class ExportService {
           status: brief.status,
           created_at: brief.created_at,
         },
-        derivatives: derivatives.map((deriv) => ({
+        derivatives: derivatives.map((deriv: any) => ({
           id: deriv.id,
           platform: deriv.platform,
           content: deriv.content,
@@ -255,7 +255,7 @@ export class ExportService {
         'Created',
       ];
 
-      const rows = result.rows.map((row) => [
+      const rows = result.rows.map((row: any) => [
         row.version_number,
         row.change_type,
         row.change_summary || '',

@@ -19,8 +19,32 @@ const server = fastify({
 });
 
 // Register CORS
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3910',
+  'http://localhost:3911'
+];
+
+// Add Vercel production URLs if available
+if (process.env.VERCEL_URL) {
+  allowedOrigins.push(`https://${process.env.VERCEL_URL}`);
+}
+if (process.env.NEXT_PUBLIC_FRONTEND_URL) {
+  allowedOrigins.push(process.env.NEXT_PUBLIC_FRONTEND_URL);
+}
+
 server.register(cors, {
-  origin: ['http://localhost:3000', 'http://localhost:3910', 'http://localhost:3911'],
+  origin: (origin, cb) => {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return cb(null, true);
+    
+    // Check if origin is allowed or is a Vercel preview URL
+    if (allowedOrigins.includes(origin) || origin.includes('.vercel.app')) {
+      return cb(null, true);
+    }
+    
+    return cb(new Error('Not allowed by CORS'), false);
+  },
   credentials: true
 });
 
@@ -52,4 +76,10 @@ const start = async () => {
   }
 };
 
-start();
+// Only start server if not in Vercel environment
+if (!process.env.VERCEL) {
+  start();
+}
+
+// Export for Vercel
+export default server;

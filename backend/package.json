@@ -4,11 +4,18 @@
   "description": "Backend for content ideas management",
   "main": "dist/server.js",
   "scripts": {
-    "build": "tsc",
+    "build": "swc src -d dist --copy-files",
+    "build:tsc": "tsc -p tsconfig.build.json",
+    "build:vercel": "swc src -d dist --copy-files",
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "migrate": "node dist/migrate.js",
-    "migrate:run": "node scripts/run-migrations.js"
+    "migrate:run": "node scripts/run-migrations.js",
+    "type-check": "tsc --noEmit",
+    "type-check:file": "tsc --noEmit > type-errors.log 2>&1 || true",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:file": "eslint src --ext .ts,.tsx > lint-errors.log 2>&1 || true",
+    "build:strict": "npm run type-check && npm run lint && tsc"
   },
   "dependencies": {
     "@fastify/cors": "^8.4.0",
@@ -20,9 +27,14 @@
     "pg": "^8.11.3"
   },
   "devDependencies": {
+    "@swc/cli": "^0.7.9",
+    "@swc/core": "^1.15.2",
     "@types/node": "^20.8.7",
     "@types/pg": "^8.10.7",
+    "@typescript-eslint/eslint-plugin": "^6.10.0",
+    "@typescript-eslint/parser": "^6.10.0",
     "axios": "^1.13.1",
+    "eslint": "^8.53.0",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.2.2"
   }
