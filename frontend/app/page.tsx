@@ -28,7 +28,7 @@ interface Idea {
   rationale?: string
   persona?: string
   industry?: string
-  status: string
+  status: 'draft' | 'selected' | 'archived' | 'pending' | 'rejected' | 'generated'
   created_at: string
 }
 

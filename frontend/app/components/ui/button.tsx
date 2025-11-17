@@ -44,7 +44,7 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, disableAnimation = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
-    
+
     if (disableAnimation || asChild) {
       return (
         <Comp
@@ -55,13 +55,16 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       )
     }
 
+    // Filter out drag-related props to avoid type conflicts with Framer Motion
+    const { onDrag, onDragStart, onDragEnd, ...motionProps } = props as any
+
     return (
       <motion.button
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         whileTap={{ scale: 0.95 }}
         transition={{ duration: 0.1 }}
-        {...props}
+        {...motionProps}
       />
     )
   }

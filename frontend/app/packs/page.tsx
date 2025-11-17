@@ -113,7 +113,7 @@ export default function PacksPage() {
             console.log(`🔄 [PACKS] Restoring ${key}:`, restoredAuth)
             return [key, restoredAuth]
           })
-        )
+        ) as Record<Platform, AuthState>
         console.log('🎯 [PACKS] Final restored state:', restored)
         setAuthStates(restored)
       } catch (error) {

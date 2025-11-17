@@ -2,6 +2,12 @@
 
 import { useState } from 'react'
 import { DerivativeVersionHistory, type DerivativeVersion } from '../components/DerivativeVersionHistory'
+
+declare global {
+  interface Window {
+    __versionControlMockSetup?: boolean
+  }
+}
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui'
 import { toast } from 'sonner'
 import { Plus, History, RefreshCw } from 'lucide-react'
@@ -72,7 +78,7 @@ export default function VersionControlDemoPage() {
       window.__versionControlMockSetup = true
 
       const originalFetch = window.fetch
-      window.fetch = function(url: string | Request, options?: RequestInit) {
+      window.fetch = function(this: Window, url: string | Request, options?: RequestInit) {
         const urlStr = typeof url === 'string' ? url : url.url
 
         // GET versions

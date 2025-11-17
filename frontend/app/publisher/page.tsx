@@ -124,7 +124,7 @@ export default function PublisherPage() {
             console.log(`🔄 Restoring ${key}:`, restoredAuth)
             return [key, restoredAuth]
           })
-        )
+        ) as Record<Platform, AuthState>
         console.log('🎯 Final restored state:', restored)
         setAuthStates(restored)
       } catch (error) {
@@ -413,11 +413,15 @@ export default function PublisherPage() {
                   {currentPreview && (
                     <>
                       <ResponsivePreview
-                        content={currentPreview.content}
-                        platform={currentPreview.platform}
-                        mode={responsiveMode}
-                        showMetrics={true}
-                      />
+                        title={`${currentPreview.platform} Preview`}
+                        defaultMode={responsiveMode}
+                      >
+                        <Card className="border-0">
+                          <CardContent className="pt-6">
+                            <p className="whitespace-pre-wrap text-sm">{currentPreview.content}</p>
+                          </CardContent>
+                        </Card>
+                      </ResponsivePreview>
 
                       {/* Platform Info Card */}
                       <Card className="border-0 shadow-lg">

@@ -29,7 +29,7 @@ export default function PackDetailPage() {
     id: params.id,
     title: 'Sample Pack',
     description: 'Pack description here...',
-    status: 'draft' as const
+    status: 'draft' as 'draft' | 'published'
   })
 
   const handleUpdate = () => {

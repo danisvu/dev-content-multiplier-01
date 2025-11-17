@@ -4,9 +4,10 @@ import * as React from 'react'
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'checked' | 'onChange'> {
   checked?: boolean | 'indeterminate'
   onCheckedChange?: (checked: boolean | 'indeterminate') => void
+  onChange?: React.ChangeEventHandler<HTMLInputElement>
 }
 
 const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(

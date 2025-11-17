@@ -25,7 +25,7 @@ const PLATFORMS = [
 type PlatformId = (typeof PLATFORMS)[number]['id']
 
 export default function EngagementDemoPage() {
-  const [selectedPlatforms, setSelectedPlatforms] = useState<Set<PlatformId>>(new Set(['twitter', 'linkedin']))
+  const [selectedPlatforms, setSelectedPlatforms] = useState<Set<PlatformId>>(() => new Set<PlatformId>(['twitter', 'linkedin']))
   const [customContent, setCustomContent] = useState('')
   const [hashtags, setHashtags] = useState('')
   const [tone, setTone] = useState('professional')

@@ -2,6 +2,12 @@
 
 import { useState } from 'react'
 import { MultiPublishQueue, type DerivativeItem } from '../components/MultiPublishQueue'
+
+declare global {
+  interface Window {
+    __multiPublishMockSetup?: boolean
+  }
+}
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui'
 import { toast } from 'sonner'
 
@@ -163,7 +169,7 @@ export default function MultiPublishQueueDemoPage() {
 
       // Mock fetch for derivatives
       const originalFetch = window.fetch
-      window.fetch = function(url: string | Request, options?: RequestInit) {
+      window.fetch = function(this: Window, url: string | Request, options?: RequestInit) {
         const urlStr = typeof url === 'string' ? url : url.url
 
         // GET derivatives

@@ -4,8 +4,6 @@ import { LinkedInPreview } from '../components/LinkedInPreview'
 import { FacebookPreview } from '../components/FacebookPreview'
 import { InstagramPreview } from '../components/InstagramPreview'
 import { TikTokPreview } from '../components/TikTokPreview'
-import { Label } from '../components/ui/label'
-import { Textarea } from '../components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 
 export default function ResponsivePreviewDemoPage() {
@@ -21,8 +19,8 @@ export default function ResponsivePreviewDemoPage() {
           <ResponsivePreview title="Twitter Preview" defaultMode="desktop">
             <TwitterPreview
               content="Just launched our new feature! 🚀 Check it out and let us know what you think. #ProductLaunch #Innovation"
-              username="YourBrand"
-              handle="@yourbrand"
+              userName="YourBrand"
+              userHandle="@yourbrand"
               timestamp="2h"
             />
           </ResponsivePreview>
@@ -30,8 +28,8 @@ export default function ResponsivePreviewDemoPage() {
           <ResponsivePreview title="LinkedIn Preview" defaultMode="desktop">
             <LinkedInPreview
               content="Excited to announce our latest product update! After months of hard work and valuable feedback from our community, we're rolling out new features that will transform how you work. Read more in the comments below. #ProductUpdate #Innovation"
-              name="Your Brand"
-              headline="Leading the Future of Innovation"
+              userName="Your Brand"
+              userTitle="Leading the Future of Innovation"
               timestamp="3h"
             />
           </ResponsivePreview>
@@ -39,7 +37,7 @@ export default function ResponsivePreviewDemoPage() {
           <ResponsivePreview title="Facebook Preview" defaultMode="desktop">
             <FacebookPreview
               content="We're thrilled to share some exciting news with our community! Stay tuned for more updates coming soon. 🎉"
-              username="Your Brand Page"
+              authorName="Your Brand Page"
               timestamp="5h"
             />
           </ResponsivePreview>
@@ -47,15 +45,14 @@ export default function ResponsivePreviewDemoPage() {
           <ResponsivePreview title="Instagram Preview" defaultMode="mobile">
             <InstagramPreview
               content="Behind the scenes of our latest project! Swipe to see more. ✨"
-              username="yourbrand"
+              authorName="yourbrand"
             />
           </ResponsivePreview>
 
           <ResponsivePreview title="TikTok Preview" defaultMode="mobile">
             <TikTokPreview
               content="Watch how we made this happen! #BehindTheScenes #Creative"
-              username="@yourbrand"
-              description="Creating magic one frame at a time ✨"
+              authorName="yourbrand"
               musicTitle="Original Sound - yourbrand"
             />
           </ResponsivePreview>
