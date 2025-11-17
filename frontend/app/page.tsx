@@ -51,7 +51,7 @@ interface GenerateIdeasResponse {
   error?: string
 }
 
-const API_BASE_URL = 'http://localhost:3911/api'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ? `${process.env.NEXT_PUBLIC_API_URL}/api` : 'http://localhost:3911/api'
 
 export default function Home() {
   const [ideas, setIdeas] = useState<Idea[]>([])
