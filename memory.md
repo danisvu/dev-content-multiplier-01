@@ -288,12 +288,15 @@ curl https://dev-content-multiplier-01-backend.vercel.app/api/ideas
   - `backend/.vercelignore`
 - **Impact:** Excludes documentation, test files, node_modules → faster builds
 
-#### 4. Root Vercel Configuration ✅
-- **File Created:** `vercel.json` (root)
-- **Features:**
-  - Defines monorepo structure for frontend & backend
-  - Documents required environment variables
-  - Sets build command for root project
+#### 4. Project-Specific Vercel Configuration ✅
+- **Backend:** `backend/vercel.json` (already existed, correct)
+  - Handles Fastify serverless routing
+  - Routes all requests to `/api/serverless.ts`
+
+- **Frontend:** `frontend/vercel.json` (created)
+  - Configures Next.js build output
+  - Documents NEXT_PUBLIC_API_URL env variable
+  - Uses standard Next.js deployment
 
 #### 5. Frontend Next.js Optimization ✅
 - **File:** `frontend/next.config.js`
@@ -316,6 +319,19 @@ curl https://dev-content-multiplier-01-backend.vercel.app/api/ideas
 ### URLs Confirmed
 - **Frontend:** `https://dev-content-multiplier-01-frontend.vercel.app`
 - **Backend:** `https://dev-content-multiplier-01-backend.vercel.app`
+
+### Vercel Project Setup Structure
+**Frontend Project:**
+- Root Directory: `frontend`
+- Framework: Next.js (auto-detect)
+- Uses: `frontend/vercel.json` + `next.config.js`
+
+**Backend Project:**
+- Root Directory: `backend`
+- Framework: Other
+- Build Command: `npm run build`
+- Output Directory: `dist`
+- Uses: `backend/vercel.json` (Fastify serverless)
 
 ## Next Steps (CRITICAL for Production)
 
@@ -358,9 +374,10 @@ curl https://dev-content-multiplier-01-backend.vercel.app/api/ideas
 - ✅ `backend/src/server.ts` - Fixed FRONTEND_URL env variable name
 - ✅ `backend/.env` - Cleaned up, removed production data
 - ✅ `backend/tsconfig.build.json` - Strengthened type checking
+- ✅ `backend/vercel.json` - Already correct (Fastify serverless config)
 - ✅ `frontend/next.config.js` - Added production optimizations
+- ✅ `frontend/vercel.json` - Created for Next.js deployment config
 - ✅ `frontend/.env.example` - Documented correct production URLs
 - ✅ `.vercelignore` - Root ignore file
 - ✅ `frontend/.vercelignore` - Frontend specific ignores
 - ✅ `backend/.vercelignore` - Backend specific ignores
-- ✅ `vercel.json` - Root monorepo configuration
