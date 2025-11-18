@@ -19,6 +19,14 @@ function getPool(): Pool {
     pool = new Pool({
       connectionString: databaseUrl,
       max: process.env.NODE_ENV === 'production' ? 5 : 20,
+      connectionTimeoutMillis: 5000, // 5 second timeout
+      idleTimeoutMillis: 30000, // 30 seconds idle timeout
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
+    });
+    
+    // Handle pool errors
+    pool.on('error', (err) => {
+      console.error('Unexpected error on idle client', err);
     });
   }
   return pool;
