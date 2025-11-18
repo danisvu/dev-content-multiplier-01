@@ -1,0 +1,53 @@
+# Version Control
+.git
+.gitignore
+
+# Documentation
+*.md
+docs/
+.test/
+
+# Development & Build
+.env.local
+.env.*.local
+node_modules
+.next
+.swc
+dist
+build
+
+# Testing
+.test
+test
+__tests__
+coverage
+.jest
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Artifacts
+.cache
+.eslintcache
+.turbo
+type-errors.log
+lint-errors.log
+
+# Backend files (not needed for frontend build)
+../backend

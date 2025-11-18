@@ -212,48 +212,155 @@ Setting up a strict TypeScript build validation system with CI/CD integration fo
    - Fixed database access pattern across all routes
    - Fixed type safety issues
 
-## Critical Fix: HTTPS Mixed Content Error
+## Critical Fix: Frontend-Backend Connection (Nov 17, 2025)
 
-### Problem Identified (Nov 17, 2025)
-- Frontend was using HTTP for `NEXT_PUBLIC_API_URL`: `http://dev-content-multiplier-01-lyj6.vercel.app`
-- Frontend deployed on HTTPS → causes "Mixed Content" browser error
-- Frontend URL: https://dev-content-multiplier-01.vercel.app
-- Backend URL: https://dev-content-multiplier-01-lyj6.vercel.app
+### Actual URLs (Verified)
+- **Frontend:** `https://dev-content-multiplier-01-frontend.vercel.app`
+- **Backend:** `https://dev-content-multiplier-01-backend.vercel.app`
 
-### Solution: Update Environment Variable
-**Step 1: Via Vercel Dashboard (Quick Fix)**
-1. Go to Settings → Environment Variables
-2. Edit `NEXT_PUBLIC_API_URL`
-3. Change: `http://dev-content-multiplier-01-lyj6.vercel.app`
-4. To: `https://dev-content-multiplier-01-lyj6.vercel.app`
-5. Save & Redeploy frontend
+### Problem Identified
+Frontend environment variables were incorrect in Vercel dashboard:
+- ❌ `VERCEL_URL = http://localhost:3911` (development URL, wrong!)
+- ❌ `NODE_ENV = development` (should be `production`)
+- ❌ `VERCEL_ENV = development` (should be `production`)
+- ❌ `NEXT_PUBLIC_API_URL` pointing to wrong/non-existent domain
 
-**Step 2: Verify Fix**
+### Solution: Fix Frontend Environment Variables on Vercel
+
+**Go to Vercel Dashboard → Frontend Project → Settings → Environment Variables**
+
+Update these variables:
+
+| Variable | Action | New Value |
+|----------|--------|-----------|
+| `NEXT_PUBLIC_API_URL` | Edit | `https://dev-content-multiplier-01-backend.vercel.app` |
+| `VERCEL_URL` | **DELETE** | *(remove entirely)* |
+| `NODE_ENV` | Edit | `production` |
+| `VERCEL_ENV` | Edit | `production` |
+| `NEXT_PUBLIC_APP_ENV` | Edit | `production` |
+
+**Then:**
+1. Save each change
+2. Go to **Deployments** tab
+3. Click **Redeploy** on latest deployment
+
+### Verification Steps
 ```bash
-# Test health endpoint
-curl https://dev-content-multiplier-01-lyj6.vercel.app/health
+# 1. Test backend health
+curl https://dev-content-multiplier-01-backend.vercel.app/health
 
-# Test API endpoint
-curl https://dev-content-multiplier-01-lyj6.vercel.app/api/ideas
+# 2. Test backend API
+curl https://dev-content-multiplier-01-backend.vercel.app/api/ideas
+
+# 3. Check frontend
+# Visit: https://dev-content-multiplier-01-frontend.vercel.app
+# Open Console (F12) → check for errors
 ```
 
 ### Code Changes Made
-- Updated `frontend/.env.example` with correct production config
-- Updated `frontend/.env.local` with development-only comments
+- Updated `frontend/.env.example` with correct backend URL
+- Removed reference to non-existent domain `dev-content-multiplier-01-lyj6.vercel.app`
 
-## Next Steps
-1. ✅ Update `NEXT_PUBLIC_API_URL` to HTTPS (via Vercel dashboard)
-2. ✅ Redeploy frontend after environment variable change
-3. Test backend health endpoint: `https://dev-content-multiplier-01-lyj6.vercel.app/health`
-4. Verify frontend console shows no Mixed Content errors
+## Vercel Deployment Fixes - Complete (Nov 17, 2025)
 
-## Files Modified Summary (Latest Session)
-- ✅ [backend/api/serverless.ts](backend/api/serverless.ts) - Fixed handler pattern
-- ✅ [backend/src/database.ts](backend/src/database.ts) - Lazy connection pattern
-- ✅ [backend/src/routes/analyticsRoutes.ts](backend/src/routes/analyticsRoutes.ts) - Database import
-- ✅ [backend/src/routes/costTrackingRoutes.ts](backend/src/routes/costTrackingRoutes.ts) - Database import + types
-- ✅ [backend/src/routes/exportRoutes.ts](backend/src/routes/exportRoutes.ts) - Database import
-- ✅ [backend/src/routes/sharingRoutes.ts](backend/src/routes/sharingRoutes.ts) - Database import + types
-- ✅ [backend/src/routes/publishingRoutes.ts](backend/src/routes/publishingRoutes.ts) - Type fixes
-- ✅ [frontend/app/components/ui/button.tsx](frontend/app/components/ui/button.tsx) - Motion type fix
-- ✅ Multiple frontend page components - API URL environment variables
+### Problems Fixed
+
+#### 1. Environment Variable Inconsistency ✅
+- **File:** `backend/src/server.ts` (Line 32)
+- **Issue:** Used `NEXT_PUBLIC_FRONTEND_URL` in CORS config
+- **Fix:** Changed to `FRONTEND_URL` for consistency with sharingRoutes.ts
+- **Impact:** Now uses single env variable name throughout backend
+
+#### 2. Backend .env File Security ✅
+- **File:** `backend/.env`
+- **Issues Fixed:**
+  - Removed hardcoded Vercel development URLs
+  - Removed duplicate DATABASE_URL entries
+  - Removed production config from dev file
+  - Cleaned up GEMINI_API_KEY (now template)
+  - Added clear documentation
+- **New Format:** Single source of truth with local development values only
+
+#### 3. Build Optimization with .vercelignore ✅
+- **Files Created:**
+  - `.vercelignore` (root)
+  - `frontend/.vercelignore`
+  - `backend/.vercelignore`
+- **Impact:** Excludes documentation, test files, node_modules → faster builds
+
+#### 4. Root Vercel Configuration ✅
+- **File Created:** `vercel.json` (root)
+- **Features:**
+  - Defines monorepo structure for frontend & backend
+  - Documents required environment variables
+  - Sets build command for root project
+
+#### 5. Frontend Next.js Optimization ✅
+- **File:** `frontend/next.config.js`
+- **Enhancements:**
+  - Added SWC minification
+  - Image optimization (AVIF, WebP)
+  - Security headers (CSP, X-Frame-Options, etc.)
+  - On-demand entry optimization
+  - Production source map disabled
+  - Template for redirects and rewrites
+
+#### 6. Backend TypeScript Build Config ✅
+- **File:** `backend/tsconfig.build.json`
+- **Changes:**
+  - Enabled strict type checking (`"strict": true`)
+  - Added error-on-compile (`noEmitOnError: true`)
+  - Kept `skipLibCheck` for faster builds
+  - Better type safety during SWC compilation
+
+### URLs Confirmed
+- **Frontend:** `https://dev-content-multiplier-01-frontend.vercel.app`
+- **Backend:** `https://dev-content-multiplier-01-backend.vercel.app`
+
+## Next Steps (CRITICAL for Production)
+
+### On Vercel Dashboard - Backend Project
+1. Go to Settings → Environment Variables
+2. Add/Update these variables:
+   ```
+   DATABASE_URL = postgresql://...your_cloud_db...
+   GEMINI_API_KEY = AIzaSy...
+   DEEPSEEK_API_KEY = sk-...
+   FRONTEND_URL = https://dev-content-multiplier-01-frontend.vercel.app
+   NODE_ENV = production
+   ```
+
+### On Vercel Dashboard - Frontend Project
+1. Go to Settings → Environment Variables
+2. Add/Update these variables:
+   ```
+   NEXT_PUBLIC_API_URL = https://dev-content-multiplier-01-backend.vercel.app
+   NODE_ENV = production
+   ```
+3. Delete if exists: `VERCEL_URL`, `VERCEL_ENV`
+4. Go to Deployments → Click Redeploy on latest
+
+### Verification
+```bash
+# Test backend health
+curl https://dev-content-multiplier-01-backend.vercel.app/health
+
+# Test backend API
+curl https://dev-content-multiplier-01-backend.vercel.app/api/ideas
+
+# Check frontend (should load without errors)
+# Visit: https://dev-content-multiplier-01-frontend.vercel.app
+# Open DevTools (F12) → Console → no errors
+```
+
+## Files Modified Summary (Vercel Deployment Session)
+**Configuration:**
+- ✅ `backend/src/server.ts` - Fixed FRONTEND_URL env variable name
+- ✅ `backend/.env` - Cleaned up, removed production data
+- ✅ `backend/tsconfig.build.json` - Strengthened type checking
+- ✅ `frontend/next.config.js` - Added production optimizations
+- ✅ `frontend/.env.example` - Documented correct production URLs
+- ✅ `.vercelignore` - Root ignore file
+- ✅ `frontend/.vercelignore` - Frontend specific ignores
+- ✅ `backend/.vercelignore` - Backend specific ignores
+- ✅ `vercel.json` - Root monorepo configuration

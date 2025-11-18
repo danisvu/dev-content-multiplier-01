@@ -1,0 +1,52 @@
+# Version Control
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+docs/
+.test/
+BRIEFCARD_COMPONENT_GUIDE.md
+BRIEF_GENERATION_GUIDE.md
+CLAUDE.md
+CREATE_NEW_PAGE_EXAMPLE.md
+DATABASE_RELATIONSHIPS_GUIDE.md
+DEBUG_MAILCHIMP.md
+*.md
+
+# Development
+.env.local
+.env.*.local
+node_modules
+.next
+.swc
+dist
+build
+
+# Testing
+.test
+test
+__tests__
+coverage
+.jest
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Misc
+.cache
+.eslintcache
+.turbo

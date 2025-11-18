@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "public": false,
+  "projects": [
+    {
+      "name": "frontend",
+      "rootDirectory": "frontend"
+    },
+    {
+      "name": "backend",
+      "rootDirectory": "backend"
+    }
+  ],
+  "env": {
+    "GEMINI_API_KEY": {
+      "type": "secret",
+      "description": "Google Gemini API key for AI content generation"
+    },
+    "DEEPSEEK_API_KEY": {
+      "type": "secret",
+      "description": "Deepseek API key for alternative AI generation"
+    },
+    "DATABASE_URL": {
+      "type": "secret",
+      "description": "PostgreSQL connection string (from Neon or Supabase)"
+    },
+    "FRONTEND_URL": {
+      "type": "secret",
+      "description": "Frontend URL for CORS and sharing links"
+    }
+  }
+}

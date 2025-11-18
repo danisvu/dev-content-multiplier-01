@@ -29,8 +29,8 @@ const allowedOrigins = [
 if (process.env.VERCEL_URL) {
   allowedOrigins.push(`https://${process.env.VERCEL_URL}`);
 }
-if (process.env.NEXT_PUBLIC_FRONTEND_URL) {
-  allowedOrigins.push(process.env.NEXT_PUBLIC_FRONTEND_URL);
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
 }
 
 server.register(cors, {

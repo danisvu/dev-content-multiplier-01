@@ -1,15 +1,29 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "strict": false,
-    "noImplicitAny": false,
-    "strictNullChecks": false,
-    "strictFunctionTypes": false,
-    "strictPropertyInitialization": false,
-    "noImplicitThis": false,
-    "alwaysStrict": false,
-    "noEmitOnError": false,
-    "skipLibCheck": true
+    // Inherit strict from base, but allow some flexibility for SWC speed
+    "strict": true,
+
+    // Catch common type errors
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+
+    // Fail on errors
+    "noEmitOnError": true,
+
+    // Skip lib check for faster builds
+    "skipLibCheck": true,
+
+    // Additional safety checks
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
   }
 }
 
