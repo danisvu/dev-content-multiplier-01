@@ -2,10 +2,5 @@
   "version": 2,
   "buildCommand": "npm run build",
   "installCommand": "npm install",
-  "outputDirectory": ".next",
-  "env": {
-    "NEXT_PUBLIC_API_URL": {
-      "description": "Backend API URL (e.g., https://dev-content-multiplier-01-backend.vercel.app)"
-    }
-  }
+  "outputDirectory": ".next"
 }
